@@ -174,7 +174,15 @@ class APIService:
             j["description_text"] = desc_text
 
             desc = desc_text or desc_html
-            salary = SalaryExtractor.extract(desc, j.get("metadata", {}))
+            meta = dict(j.get("metadata") or {})
+            if j.get("salary_raw"):
+                meta["salary_raw"] = j["salary_raw"]
+                if isinstance(j["salary_raw"], list):
+                    meta["payRangeDetails"] = j["salary_raw"]
+                elif isinstance(j["salary_raw"], dict):
+                    meta["compensation"] = j["salary_raw"]
+
+            salary = SalaryExtractor.extract(desc, meta)
             red_flags = RedFlagDetector.scan(desc, j.get("title", ""))
             flag_summary = RedFlagDetector.summarize(red_flags)
 
@@ -187,8 +195,8 @@ class APIService:
                 "role_fit": ds.get("role_fit", ""),
                 "key_gaps": ds.get("key_gaps", []),
                 "recommendation": ds.get("recommendation", "weak_match"),
-                "salary": salary.display,
-                "salary_range": {"min": salary.min_salary, "max": salary.max_salary, "currency": salary.currency},
+                "salary": salary.display if salary.display != "Not listed" else j.get("salary", "Not listed"),
+                "salary_range": {"min": salary.min_salary, "max": salary.max_salary, "currency": salary.currency, "period": salary.period},
                 "red_flags": [f.to_dict() for f in red_flags],
                 "red_flag_count": flag_summary.get("total", 0),
                 "red_flag_verdict": flag_summary.get("verdict", "clean"),
@@ -400,6 +408,23 @@ class APIService:
         )
 
         return self.get_job_output(job.id)
+
+    def auto_apply_job(
+        self,
+        job_id: str,
+        headed: bool = True,
+        auto_submit: bool = False,
+        review_timeout_sec: int = 15,
+    ) -> dict[str, Any]:
+        """Execute Playwright automated application workflow for a job listing."""
+        from src.auto_apply.runner import AutoApplyRunner
+        runner = AutoApplyRunner(service=self, tracker=self.tracker)
+        return runner.apply(
+            job_id=job_id,
+            headed=headed,
+            auto_submit=auto_submit,
+            review_timeout_sec=review_timeout_sec,
+        )
 
     async def scan_stream(self) -> AsyncGenerator[str, None]:
         """Stream scan execution progress via Server-Sent Events."""

@@ -18,6 +18,12 @@ class TailorRequest(BaseModel):
     cover_letter: bool = True
 
 
+class AutoApplyRequest(BaseModel):
+    headed: bool = True
+    auto_submit: bool = False
+    review_timeout_sec: int = 15
+
+
 class TrackerUpdateRequest(BaseModel):
     status: str
     notes: str | None = None
@@ -57,7 +63,12 @@ def get_stats() -> dict[str, Any]:
 
 
 @router.get("/jobs")
-def get_jobs(search: str | None = None, min_score: float = Query(0.0, ge=0.0, le=1.0)) -> dict[str, Any]:
+def get_jobs(
+    search: str | None = None,
+    min_score: float = Query(0.0, ge=0.0, le=1.0),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(0, ge=0),
+) -> dict[str, Any]:
     data = service.get_jobs()
     jobs = data.get("jobs", [])
 
@@ -74,9 +85,22 @@ def get_jobs(search: str | None = None, min_score: float = Query(0.0, ge=0.0, le
             or q in j.get("ats_source", "").lower()
         ]
 
+    total = len(jobs)
+    if page_size > 0:
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        paginated_jobs = jobs[start_idx:end_idx]
+    else:
+        paginated_jobs = jobs
+
+    total_pages = (total + page_size - 1) // page_size if page_size > 0 else 1
+
     return {
-        "jobs": jobs,
-        "total": len(jobs),
+        "jobs": paginated_jobs,
+        "total": total,
+        "page": page,
+        "page_size": page_size or total,
+        "total_pages": total_pages,
         "suggestions": data.get("suggestions", []),
     }
 
@@ -95,6 +119,20 @@ def tailor_job(job_id: str, req: TailorRequest):
     try:
         result = service.tailor_job(job_id, generate_cover_letter=req.cover_letter)
         return {"success": True, "data": result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/jobs/{job_id}/auto-apply")
+def auto_apply_job(job_id: str, req: AutoApplyRequest = AutoApplyRequest()):
+    try:
+        result = service.auto_apply_job(
+            job_id=job_id,
+            headed=req.headed,
+            auto_submit=req.auto_submit,
+            review_timeout_sec=req.review_timeout_sec,
+        )
+        return {"success": result.get("success", False), "data": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

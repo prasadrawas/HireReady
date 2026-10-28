@@ -13,6 +13,7 @@ import {
   fetchJobOutput,
   tailorJob,
   tailorBulk,
+  triggerAutoApply,
   updateTrackerStatus,
   deleteTrackerJob,
 } from './api'
@@ -28,6 +29,8 @@ export function App() {
   const [isScanning, setIsScanning] = useState(false)
   const [isTailoring, setIsTailoring] = useState(false)
   const [activeJobIdTailoring, setActiveJobIdTailoring] = useState<string | null>(null)
+  const [isAutoApplying, setIsAutoApplying] = useState(false)
+  const [activeJobIdAutoApplying, setActiveJobIdAutoApplying] = useState<string | null>(null)
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; undoAction?: () => void } | null>(null)
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     try {
@@ -175,6 +178,39 @@ export function App() {
     }
   }
 
+  const handleAutoApply = async (job: JobListing, autoSubmit = false) => {
+    setIsAutoApplying(true)
+    setActiveJobIdAutoApplying(job.id)
+    try {
+      showNotification(`Launching browser & auto-filling application for ${job.company}...`)
+      const res = await triggerAutoApply(job.id, autoSubmit)
+      if (res.success) {
+        // Refresh applications tracker
+        const trackerData = await fetchTracker()
+        setApplications(trackerData.applications || [])
+        // Update job tracker status locally
+        const newStatus = res.data?.status === 'submitted' ? 'submitted' : 'ready_for_review'
+        setJobs((prev) =>
+          prev.map((j) => (j.id === job.id ? { ...j, tracker_status: newStatus, has_tailored_resume: true } : j))
+        )
+        if (selectedJob?.id === job.id) {
+          setSelectedJob((prev) =>
+            prev ? { ...prev, tracker_status: newStatus, has_tailored_resume: true } : null
+          )
+        }
+        showNotification(res.data?.message || `Auto-applied successfully to ${job.company}!`)
+      } else {
+        showNotification(res.data?.message || 'Auto-apply encountered an issue', 'error')
+      }
+    } catch (err: any) {
+      console.error('Auto-apply error:', err)
+      showNotification(err.message || 'Failed to auto-apply', 'error')
+    } finally {
+      setIsAutoApplying(false)
+      setActiveJobIdAutoApplying(null)
+    }
+  }
+
   const handleToggleBulkId = (jobId: string) => {
     setBulkTailorIds((prev) => {
       const next = new Set(prev)
@@ -284,6 +320,9 @@ export function App() {
             onSelectJob={handleSelectJob}
             onTailor={handleTailor}
             onTrack={handleTrack}
+            onAutoApply={handleAutoApply}
+            isAutoApplying={isAutoApplying}
+            activeJobIdAutoApplying={activeJobIdAutoApplying}
             tailoredOutput={tailoredOutput}
             isTailoring={isTailoring}
             activeJobIdTailoring={activeJobIdTailoring}
@@ -317,6 +356,9 @@ export function App() {
             onSelectJob={handleSelectJob}
             tailoredOutput={tailoredOutput}
             onTailor={handleTailor}
+            onAutoApply={handleAutoApply}
+            isAutoApplying={isAutoApplying}
+            activeJobIdAutoApplying={activeJobIdAutoApplying}
             isTailoring={isTailoring}
             darkMode={darkMode}
           />

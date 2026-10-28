@@ -30,6 +30,19 @@ export async function tailorJob(jobId: string, coverLetter = true): Promise<{ su
   return res.json()
 }
 
+export async function triggerAutoApply(jobId: string, autoSubmit = false): Promise<{ success: boolean; data: any }> {
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/auto-apply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ headed: true, auto_submit: autoSubmit, review_timeout_sec: 20 }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed to execute auto-apply' }))
+    throw new Error(err.detail || 'Failed to execute auto-apply')
+  }
+  return res.json()
+}
+
 export async function fetchJobOutput(jobId: string): Promise<JobOutput> {
   const res = await fetch(`${API_BASE}/jobs/${jobId}/output`)
   if (!res.ok) throw new Error('Failed to fetch job output')

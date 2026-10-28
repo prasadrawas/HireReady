@@ -15,8 +15,10 @@ import {
   Info,
   ZoomIn,
   ZoomOut,
+  Bot,
 } from 'lucide-react'
 import { JobListing, JobOutput } from '../types'
+import { CompanyLogo } from './CompanyLogo'
 
 interface TailorStudioProps {
   jobs: JobListing[]
@@ -24,6 +26,9 @@ interface TailorStudioProps {
   onSelectJob: (job: JobListing) => void
   tailoredOutput: JobOutput | null
   onTailor: (job: JobListing, coverLetter: boolean) => Promise<void>
+  onAutoApply?: (job: JobListing, autoSubmit?: boolean) => Promise<void>
+  isAutoApplying?: boolean
+  activeJobIdAutoApplying?: string | null
   isTailoring: boolean
   darkMode: boolean
 }
@@ -103,6 +108,9 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
   onSelectJob,
   tailoredOutput,
   onTailor,
+  onAutoApply,
+  isAutoApplying,
+  activeJobIdAutoApplying,
   isTailoring,
   darkMode,
 }) => {
@@ -196,11 +204,11 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
                       : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
                   }`}
                 >
-                  <div
-                    className={`w-9 h-9 rounded-lg ${avatarColor} flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs`}
-                  >
-                    {job.company.substring(0, 2).toUpperCase()}
-                  </div>
+                  <CompanyLogo
+                    company={job.company}
+                    companySlug={job.company_slug}
+                    className="w-9 h-9 rounded-lg text-xs"
+                  />
                   <div className="flex-1 min-w-0">
                     <h4
                       className={`text-xs font-bold truncate ${
@@ -230,13 +238,11 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
           darkMode ? 'bg-[#16213e] border-[#1e3a5f]' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center gap-3.5">
-            <div
-              className={`w-12 h-12 rounded-lg ${getAvatarColor(
-                currentJob.company
-              )} flex items-center justify-center text-white font-bold text-base shrink-0 shadow-xs`}
-            >
-              {currentJob.company.substring(0, 2).toUpperCase()}
-            </div>
+            <CompanyLogo
+              company={currentJob.company}
+              companySlug={currentJob.company_slug}
+              className="w-12 h-12 rounded-lg text-base"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{currentJob.company}</span>
@@ -274,6 +280,27 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
               >
                 <Download className="w-3.5 h-3.5" /> Download PDF
               </a>
+            )}
+
+            {onAutoApply && (
+              <button
+                onClick={() => onAutoApply(currentJob, false)}
+                disabled={isAutoApplying && activeJobIdAutoApplying === currentJob.id}
+                className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                title="Auto-fill form, upload resume & cover letter, and answer custom questions via Playwright"
+              >
+                {isAutoApplying && activeJobIdAutoApplying === currentJob.id ? (
+                  <>
+                    <span className="animate-spin text-xs">⟳</span>
+                    <span>Auto-Applying...</span>
+                  </>
+                ) : (
+                  <>
+                    <Bot className="w-3.5 h-3.5" />
+                    <span>Auto-Apply</span>
+                  </>
+                )}
+              </button>
             )}
 
             <a

@@ -179,6 +179,7 @@ class ATSAggregator:
                         ats_name=ats_name,
                         slug=comp["slug"],
                         name=comp.get("name", comp["slug"]),
+                        preferences=preferences,
                     )
                 )
 
@@ -245,9 +246,13 @@ class ATSAggregator:
         ats_name: str,
         slug: str,
         name: str,
+        preferences: SearchPreferences | None = None,
     ) -> tuple[str, list[JobListing]]:
         """Fetch jobs for a single company."""
-        jobs = await client.fetch_jobs(slug, name)
+        if isinstance(client, GenericATSClient):
+            jobs = await client.fetch_jobs(slug, name, preferences=preferences)
+        else:
+            jobs = await client.fetch_jobs(slug, name)
         return ats_name, jobs
 
     def _matches_preferences(self, job: JobListing, prefs: SearchPreferences) -> bool:

@@ -23,6 +23,7 @@ input/master_resume.html
 
 # Job search preferences — reveals your target roles, locations, salary expectations
 input/preferences.yaml
+input/applicant_profile.yaml
 
 # All tailored output — contains your personalized resumes, cover letters, contact info
 output/
@@ -35,6 +36,7 @@ data/last_scan.json
 data/alerts.json
 data/company_cache.json
 data/cron.log
+data/cache/
 
 # Project prompt — development artifact, not needed in repo
 prompt.md

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   ExternalLink,
   Sparkles,
@@ -28,8 +28,10 @@ import {
   Square,
   CheckSquare,
   Link,
+  Bot,
 } from 'lucide-react'
 import { JobListing, JobOutput } from '../types'
+import { CompanyLogo } from './CompanyLogo'
 
 interface JobSplitViewProps {
   jobs: JobListing[]
@@ -43,6 +45,9 @@ interface JobSplitViewProps {
   bulkTailorIds: Set<string>
   onToggleBulkId: (jobId: string) => void
   onBulkTailor: (coverLetter?: boolean) => void
+  onAutoApply?: (job: JobListing, autoSubmit?: boolean) => Promise<void>
+  isAutoApplying?: boolean
+  activeJobIdAutoApplying?: string | null
   darkMode: boolean
 }
 
@@ -143,6 +148,9 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
   bulkTailorIds,
   onToggleBulkId,
   onBulkTailor,
+  onAutoApply,
+  isAutoApplying,
+  activeJobIdAutoApplying,
   darkMode,
 }) => {
   // Filter states
@@ -204,6 +212,21 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
       return true
     })
   }, [jobs, searchQuery, selectedPlatform, selectedCompany, remoteOnly, minScoreFilter, tailoredOnly, minSalaryFilter, postedWithin])
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(15)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedPlatform, selectedCompany, remoteOnly, minScoreFilter, tailoredOnly, minSalaryFilter, postedWithin])
+
+  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / (pageSize || 1)))
+  const paginatedJobs = useMemo(() => {
+    if (pageSize <= 0) return filteredJobs
+    const start = (currentPage - 1) * pageSize
+    return filteredJobs.slice(start, start + pageSize)
+  }, [filteredJobs, currentPage, pageSize])
 
   // Auto-select first job if none selected
   const activeJob = selectedJob || filteredJobs[0] || null
@@ -476,129 +499,197 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
 
       {/* MAIN SPLIT VIEW */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-5 flex gap-5 overflow-hidden">
-        {/* LEFT COLUMN: Scrollable Job Listings */}
-        <div className={`w-full md:w-[380px] lg:w-[410px] xl:w-[430px] rounded-xl border overflow-y-auto shrink-0 divide-y shadow-xs ${
-          darkMode ? 'bg-[#16213e] border-[#1e3a5f] divide-[#1e3a5f]' : 'bg-white border-slate-200 divide-slate-100'
+        {/* LEFT COLUMN: Job Listings with Pagination */}
+        <div className={`w-full md:w-[380px] lg:w-[410px] xl:w-[430px] rounded-xl border shrink-0 flex flex-col shadow-xs overflow-hidden ${
+          darkMode ? 'bg-[#16213e] border-[#1e3a5f]' : 'bg-white border-slate-200'
         }`}>
-          {filteredJobs.length === 0 ? (
-            <div className="p-10 text-center">
-              <Briefcase className={`w-10 h-10 mx-auto mb-2 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
-              <p className={`font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No matching jobs</p>
-              <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Try resetting or broadening your filters.</p>
-              <button
-                onClick={() => {
-                  setSearchQuery('')
-                  setRemoteOnly(false)
-                  setTailoredOnly(false)
-                  setSelectedPlatform('all')
-                  setMinScoreFilter(0)
-                  setMinSalaryFilter(0)
-                }}
-                className="mt-3 px-4 py-1.5 rounded-full bg-[#0a66c2] text-white text-xs font-semibold cursor-pointer"
-              >
-                Reset All Filters
-              </button>
-            </div>
-          ) : (
-            filteredJobs.map((job) => {
-              const isSelected = activeJob?.id === job.id
-              const matchPct = Math.round((job.score || 0.5) * 100)
-              const avatarColor = getAvatarColor(job.company)
-              const freshness = getDaysAgo(job.posted_date)
-              const isBulkSelected = bulkTailorIds.has(job.id)
-
-              return (
-                <div
-                  key={job.id}
-                  className={`p-4 transition-all cursor-pointer relative flex gap-3.5 ${
-                    darkMode ? 'hover:bg-[#1e3a5f]' : 'hover:bg-slate-50'
-                  } ${
-                    isSelected
-                      ? darkMode
-                        ? 'bg-[#1e3a5f]/70 border-l-4 border-l-[#0a66c2]'
-                        : 'bg-[#edf3f8]/70 border-l-4 border-l-[#0a66c2]'
-                      : 'border-l-4 border-l-transparent'
-                  }`}
+          {/* Scrollable Job Listings */}
+          <div className={`flex-1 overflow-y-auto divide-y ${
+            darkMode ? 'divide-[#1e3a5f]' : 'divide-slate-100'
+          }`}>
+            {filteredJobs.length === 0 ? (
+              <div className="p-10 text-center">
+                <Briefcase className={`w-10 h-10 mx-auto mb-2 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
+                <p className={`font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>No matching jobs</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Try resetting or broadening your filters.</p>
+                <button
+                  onClick={() => {
+                    setSearchQuery('')
+                    setRemoteOnly(false)
+                    setTailoredOnly(false)
+                    setSelectedPlatform('all')
+                    setMinScoreFilter(0)
+                    setMinSalaryFilter(0)
+                  }}
+                  className="mt-3 px-4 py-1.5 rounded-full bg-[#0a66c2] text-white text-xs font-semibold cursor-pointer"
                 >
-                  {/* Bulk Select Checkbox */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onToggleBulkId(job.id)
-                    }}
-                    className={`shrink-0 mt-1 cursor-pointer ${isBulkSelected ? 'text-[#0a66c2]' : darkMode ? 'text-slate-500' : 'text-slate-300'}`}
-                    title="Select for bulk tailor"
-                  >
-                    {isBulkSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                  </button>
+                  Reset All Filters
+                </button>
+              </div>
+            ) : (
+              paginatedJobs.map((job) => {
+                const isSelected = activeJob?.id === job.id
+                const matchPct = Math.round((job.score || 0.5) * 100)
+                const avatarColor = getAvatarColor(job.company)
+                const freshness = getDaysAgo(job.posted_date)
+                const isBulkSelected = bulkTailorIds.has(job.id)
 
-                  {/* Company Logo Square */}
+                return (
                   <div
-                    onClick={() => onSelectJob(job)}
-                    className={`w-12 h-12 rounded-lg ${avatarColor} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs`}
+                    key={job.id}
+                    className={`p-4 transition-all cursor-pointer relative flex gap-3.5 ${
+                      darkMode ? 'hover:bg-[#1e3a5f]' : 'hover:bg-slate-50'
+                    } ${
+                      isSelected
+                        ? darkMode
+                          ? 'bg-[#1e3a5f]/70 border-l-4 border-l-[#0a66c2]'
+                          : 'bg-[#edf3f8]/70 border-l-4 border-l-[#0a66c2]'
+                        : 'border-l-4 border-l-transparent'
+                    }`}
                   >
-                    {job.company.substring(0, 2).toUpperCase()}
-                  </div>
-
-                  {/* Job Summary */}
-                  <div className="flex-1 min-w-0" onClick={() => onSelectJob(job)}>
-                    <h4
-                      className={`text-sm font-semibold truncate ${
-                        isSelected ? 'text-[#0a66c2]' : darkMode ? 'text-slate-100 hover:text-[#0a66c2]' : 'text-slate-900 hover:text-[#0a66c2]'
-                      }`}
+                    {/* Bulk Select Checkbox */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onToggleBulkId(job.id)
+                      }}
+                      className={`shrink-0 mt-1 cursor-pointer ${isBulkSelected ? 'text-[#0a66c2]' : darkMode ? 'text-slate-500' : 'text-slate-300'}`}
+                      title="Select for bulk tailor"
                     >
-                      {job.title}
-                    </h4>
+                      {isBulkSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                    </button>
 
-                    <p className={`text-xs font-normal mt-0.5 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{job.company}</p>
+                    {/* Company Logo Square */}
+                    <div onClick={() => onSelectJob(job)}>
+                      <CompanyLogo
+                        company={job.company}
+                        companySlug={job.company_slug}
+                        className="w-12 h-12 rounded-lg text-sm"
+                      />
+                    </div>
 
-                    <p className={`text-xs mt-0.5 truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {job.location || 'Remote'} {job.remote && '(Remote)'}
-                    </p>
-
-                    {job.salary && (
-                      <p className={`text-xs font-medium mt-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                        {job.salary}
-                      </p>
-                    )}
-
-                    {/* Tags & Status */}
-                    <div className={`flex items-center justify-between w-full mt-2 text-[11px]`}>
-                      {job.has_tailored_resume ? (
-                        <span className="flex items-center gap-1 text-[#057642] font-semibold shrink-0">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Tailored
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-[#057642] font-medium shrink-0">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Reviewing
-                        </span>
-                      )}
-
-                      <span
-                        className={`font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                          matchPct >= 70
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : matchPct >= 50
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'bg-slate-100 text-slate-600'
+                    {/* Job Summary */}
+                    <div className="flex-1 min-w-0" onClick={() => onSelectJob(job)}>
+                      <h4
+                        className={`text-sm font-semibold truncate ${
+                          isSelected ? 'text-[#0a66c2]' : darkMode ? 'text-slate-100 hover:text-[#0a66c2]' : 'text-slate-900 hover:text-[#0a66c2]'
                         }`}
                       >
-                        {matchPct}% Match
-                      </span>
+                        {job.title}
+                      </h4>
 
-                      {freshness && (
-                        <span className={`flex items-center gap-0.5 shrink-0 ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                          <Clock className="w-3 h-3" />
-                          {freshness}
-                        </span>
+                      <p className={`text-xs font-normal mt-0.5 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{job.company}</p>
+
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className={`text-xs truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {job.location || 'Remote'}
+                        </p>
+                        {job.workplace_type && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                            job.workplace_type === 'Remote'
+                              ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              : job.workplace_type === 'Hybrid'
+                              ? 'bg-indigo-100/70 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                          }`}>
+                            {job.workplace_type}
+                          </span>
+                        )}
+                      </div>
+
+                      {job.salary && (
+                        <p className={`text-xs font-medium mt-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {job.salary}
+                        </p>
                       )}
+
+                      {/* Tags & Status */}
+                      <div className={`flex items-center justify-between w-full mt-2 text-[11px]`}>
+                        {job.has_tailored_resume ? (
+                          <span className="flex items-center gap-1 text-[#057642] font-semibold shrink-0">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Tailored
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[#057642] font-medium shrink-0">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Reviewing
+                          </span>
+                        )}
+
+                        <span
+                          className={`font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                            matchPct >= 70
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : matchPct >= 50
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {matchPct}% Match
+                        </span>
+
+                        {freshness && (
+                          <span className={`flex items-center gap-0.5 shrink-0 ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+                            <Clock className="w-3 h-3" />
+                            {freshness}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })
+                )
+              })
+            )}
+          </div>
+
+          {/* Sticky Pagination Footer */}
+          {filteredJobs.length > 0 && (
+            <div className={`p-2.5 px-3 border-t shrink-0 flex items-center justify-between text-xs font-medium ${
+              darkMode ? 'bg-[#16213e] border-[#1e3a5f] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'
+            }`}>
+              <div className="flex items-center gap-1">
+                <span>Page</span>
+                <span className="font-bold text-[#0a66c2]">{currentPage}</span>
+                <span>of</span>
+                <span className="font-bold">{totalPages}</span>
+                <span className="text-[11px] text-slate-400 ml-1">({filteredJobs.length})</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                  className="px-2.5 py-1 rounded border disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer disabled:cursor-not-allowed text-xs font-semibold"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                  className="px-2.5 py-1 rounded border disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer disabled:cursor-not-allowed text-xs font-semibold"
+                >
+                  Next
+                </button>
+
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className={`rounded px-1.5 py-1 border text-xs cursor-pointer ${
+                    darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-white text-slate-700 border-slate-300'
+                  }`}
+                >
+                  <option value={10}>10 / page</option>
+                  <option value={15}>15 / page</option>
+                  <option value={25}>25 / page</option>
+                  <option value={50}>50 / page</option>
+                  <option value={0}>All</option>
+                </select>
+              </div>
+            </div>
           )}
         </div>
 
@@ -612,13 +703,11 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
               <div>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3.5">
-                    <div
-                      className={`w-14 h-14 rounded-lg ${getAvatarColor(
-                        activeJob.company
-                      )} flex items-center justify-center text-white font-bold text-lg shadow-xs`}
-                    >
-                      {activeJob.company.substring(0, 2).toUpperCase()}
-                    </div>
+                    <CompanyLogo
+                      company={activeJob.company}
+                      companySlug={activeJob.company_slug}
+                      className="w-14 h-14 rounded-lg text-lg"
+                    />
                     <div>
                       <span className={`text-sm font-semibold hover:text-[#0a66c2] cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                         {activeJob.company}
@@ -651,17 +740,59 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
 
                 {/* Badges */}
                 <div className="flex flex-wrap items-center gap-2 mt-3 text-xs">
-                  <span className={`px-3 py-1 rounded-full font-semibold border ${darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                    {activeJob.remote ? '\u2713 Remote' : '\u2713 On-site / Hybrid'}
+                  {/* Workplace type badge */}
+                  <span className={`px-3 py-1 rounded-full font-semibold border ${
+                    activeJob.workplace_type === 'Remote'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                      : activeJob.workplace_type === 'Hybrid'
+                      ? 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
+                      : darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-700 border-slate-200'
+                  }`}>
+                    {activeJob.workplace_type ? `\u2713 ${activeJob.workplace_type}` : activeJob.remote ? '\u2713 Remote' : '\u2713 On-site / Hybrid'}
                   </span>
-                  <span className={`px-3 py-1 rounded-full font-semibold border ${darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                    Full-time
-                  </span>
-                  {activeJob.salary && (
-                    <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200">
+
+                  {/* Employment type badge */}
+                  {(activeJob.employment_type || true) && (
+                    <span className={`px-3 py-1 rounded-full font-semibold border ${darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                      {activeJob.employment_type || 'Full-time'}
+                    </span>
+                  )}
+
+                  {/* Experience level badge */}
+                  {activeJob.experience_level && (
+                    <span className={`px-3 py-1 rounded-full font-semibold border ${darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                      {activeJob.experience_level}
+                    </span>
+                  )}
+
+                  {/* Department / Team badge */}
+                  {(activeJob.team || activeJob.department) && (
+                    <span className={`px-3 py-1 rounded-full font-medium border ${darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                      {activeJob.team ? `${activeJob.department ? `${activeJob.department} \u2022 ` : ''}${activeJob.team}` : activeJob.department}
+                    </span>
+                  )}
+
+                  {/* Salary badge */}
+                  {activeJob.salary && activeJob.salary !== 'Not listed' && (
+                    <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                       {activeJob.salary}
                     </span>
                   )}
+
+                  {/* Equity badge */}
+                  {activeJob.has_equity && (
+                    <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 font-semibold border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                      \u2605 Offers Equity
+                    </span>
+                  )}
+
+                  {/* Secondary locations */}
+                  {activeJob.locations && activeJob.locations.length > 1 && (
+                    <span className={`px-3 py-1 rounded-full font-medium border ${darkMode ? 'bg-[#1e3a5f] text-slate-400 border-[#2a4a6f]' : 'bg-slate-50 text-slate-600 border-slate-200'}`} title={activeJob.locations.join(', ')}>
+                      +{activeJob.locations.length - 1} more locations
+                    </span>
+                  )}
+
                   {activeJob.red_flag_verdict && activeJob.red_flag_verdict !== 'clean' && (
                     <span className={`px-3 py-1 rounded-full font-semibold border ${getVerdictColor(activeJob.red_flag_verdict)}`}>
                       {activeJob.red_flag_verdict.replace(/_/g, ' ')}
@@ -680,6 +811,28 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                     <span>Apply</span>
                     <ExternalLink className="w-4 h-4 ml-0.5" />
                   </a>
+
+                  {/* Auto-Apply Supervised Button */}
+                  {onAutoApply && (
+                    <button
+                      onClick={() => onAutoApply(activeJob, false)}
+                      disabled={isAutoApplying && activeJobIdAutoApplying === activeJob.id}
+                      className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                      title="Auto-fill form, upload resume & cover letter, and answer custom questions via Playwright"
+                    >
+                      {isAutoApplying && activeJobIdAutoApplying === activeJob.id ? (
+                        <>
+                          <span className="animate-spin text-sm">⟳</span>
+                          <span>Auto-Applying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Bot className="w-4 h-4" />
+                          <span>Auto-Apply</span>
+                        </>
+                      )}
+                    </button>
+                  )}
 
                   {/* Copy URL */}
                   <button

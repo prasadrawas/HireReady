@@ -145,9 +145,54 @@ class SalaryExtractor:
         if not metadata:
             return SalaryInfo()
 
-        # Ashby compensation data
+        # Rippling payRangeDetails (list of dicts) or generic salary_raw list
+        pay_ranges = metadata.get("payRangeDetails") or metadata.get("salary_raw")
+        if isinstance(pay_ranges, list) and pay_ranges:
+            first_range = pay_ranges[0]
+            if isinstance(first_range, dict):
+                min_val = first_range.get("rangeStart") or first_range.get("min")
+                max_val = first_range.get("rangeEnd") or first_range.get("max")
+                curr = first_range.get("currency", "USD")
+                freq = (first_range.get("frequency") or "year").lower()
+                period = "year" if "year" in freq else "hour" if "hour" in freq else "month" if "month" in freq else "year"
+                if min_val or max_val:
+                    return SalaryInfo(
+                        min_salary=int(min_val) if min_val else None,
+                        max_salary=int(max_val) if max_val else None,
+                        currency=curr,
+                        period=period,
+                        source="ats_metadata",
+                    )
+
+        # Ashby / structured compensation data
         compensation = metadata.get("compensation") or metadata.get("salary") or {}
         if isinstance(compensation, dict):
+            # Try Ashby compensation tiers
+            tiers = compensation.get("compensationTiers", [])
+            for tier in tiers:
+                for comp_item in tier.get("components", []):
+                    if comp_item.get("compensationType") == "Salary":
+                        min_val = comp_item.get("minValue")
+                        max_val = comp_item.get("maxValue")
+                        curr = comp_item.get("currencyCode", "USD")
+                        interval = comp_item.get("interval", "1 YEAR")
+                        period = "year" if "year" in str(interval).lower() else "hour" if "hour" in str(interval).lower() else "year"
+                        if min_val or max_val:
+                            return SalaryInfo(
+                                min_salary=int(min_val) if min_val else None,
+                                max_salary=int(max_val) if max_val else None,
+                                currency=curr,
+                                period=period,
+                                source="ats_metadata",
+                            )
+
+            summary = compensation.get("scrapeableCompensationSalarySummary")
+            if summary:
+                parsed = cls.extract_from_text(summary)
+                if parsed.min_salary or parsed.max_salary:
+                    parsed.source = "ats_metadata"
+                    return parsed
+
             min_val = compensation.get("min") or compensation.get("rangeStart") or compensation.get("minimum")
             max_val = compensation.get("max") or compensation.get("rangeEnd") or compensation.get("maximum")
             currency = compensation.get("currency", "USD")

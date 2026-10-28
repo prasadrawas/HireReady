@@ -5,23 +5,34 @@ export interface JobListing {
   company_slug?: string
   title: string
   location?: string
+  locations?: string[]
   remote: boolean
+  workplace_type?: string
+  employment_type?: string
+  experience_level?: string
+  team?: string
   department?: string
+  country?: string
   posted_date?: string
+  updated_date?: string
   application_url: string
+  job_url?: string
   description_text?: string
   description_html?: string
+  description_sections?: Record<string, string>
   score?: number
   role_fit?: string
   key_gaps?: string[]
   recommendation?: string
   salary?: string
-  salary_range?: { min?: number; max?: number; currency?: string }
+  salary_range?: { min?: number; max?: number; currency?: string; period?: string }
+  has_equity?: boolean
   red_flags?: string[]
   red_flag_count?: number
   red_flag_verdict?: string
   has_tailored_resume?: boolean
   tracker_status?: string
+  metadata?: Record<string, any>
 }
 
 export interface RoleSuggestion {

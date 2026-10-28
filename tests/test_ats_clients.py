@@ -470,3 +470,156 @@ def test_generic_client_field_resolution():
     assert client._get_field(data, ["missing", "also_missing", "title"]) == "Engineer"
     assert client._get_field(data, ["missing"]) is None
     assert client._get_field(data, None) is None
+
+
+@pytest.mark.asyncio
+async def test_rippling_client_with_detail():
+    """Test Rippling client fetching list + detail, combining company and role description, and extracting payRangeDetails."""
+    configs = load_platform_configs()
+    rippling_cfg = configs["rippling"]
+    client = GenericATSClient(
+        platform_name="rippling",
+        platform_config=rippling_cfg,
+        rate_limit_delay_seconds=0,
+    )
+
+    list_response = {
+        "items": [
+            {
+                "id": "rip-job-1",
+                "name": "Senior Product Designer",
+                "url": "https://ats.rippling.com/rippling/jobs/rip-job-1",
+                "department": {"name": "Design"},
+                "locations": [
+                    {
+                        "name": "San Francisco, CA",
+                        "country": "United States",
+                        "workplaceType": "HYBRID",
+                    }
+                ],
+            }
+        ]
+    }
+
+    detail_response = {
+        "uuid": "rip-job-1",
+        "name": "Senior Product Designer",
+        "description": {
+            "company": "<p>About Rippling: Building the future of workforce management.</p>",
+            "role": "<p>Responsibilities: Design intuitive employee workflows.</p>",
+        },
+        "workLocations": ["San Francisco, CA", "New York, NY"],
+        "employmentType": {"id": "Salaried, full-time", "label": "SALARIED_FT"},
+        "payRangeDetails": [
+            {
+                "location": "US",
+                "currency": "USD",
+                "frequency": "YEAR",
+                "rangeStart": 180000.0,
+                "rangeEnd": 230000.0,
+            }
+        ],
+        "createdOn": "2026-06-15T10:00:00Z",
+    }
+
+    from unittest.mock import MagicMock
+
+    async def mock_get(url, *args, **kwargs):
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.raise_for_status = lambda: None
+        if "rip-job-1" in url:
+            resp.json = lambda: detail_response
+        else:
+            resp.json = lambda: list_response
+        return resp
+
+    with patch.object(client.client, "get", side_effect=mock_get):
+        jobs = await client.fetch_jobs("rippling", "Rippling")
+
+    assert len(jobs) == 1
+    job = jobs[0]
+    assert job.title == "Senior Product Designer"
+    assert job.ats_source == "rippling"
+    assert "About Rippling" in job.description_html
+    assert "Responsibilities: Design intuitive employee workflows" in job.description_html
+    assert job.workplace_type == "Hybrid"
+    assert job.employment_type == "Full-time"
+    assert "San Francisco, CA" in job.locations
+    assert "New York, NY" in job.locations
+    assert job.salary_raw is not None
+
+    # Test salary extraction
+    from src.salary_extractor import SalaryExtractor
+    salary = SalaryExtractor.extract(job.description_text, job.metadata)
+    assert salary.min_salary == 180000
+    assert salary.max_salary == 230000
+    assert salary.display == "$180K-$230K"
+
+
+@pytest.mark.asyncio
+async def test_ats_prefiltering_and_cache(tmp_path):
+    """Test that pre-filtering reduces detail calls and TTL caching avoids repeat network requests."""
+    from unittest.mock import MagicMock, PropertyMock
+    from src.models.preferences import SearchPreferences
+    from config.settings import settings
+
+    configs = load_platform_configs()
+    rippling_cfg = configs["rippling"]
+    client = GenericATSClient(
+        platform_name="rippling",
+        platform_config=rippling_cfg,
+        rate_limit_delay_seconds=0,
+    )
+
+    list_response = {
+        "items": [
+            {"id": "job-sales", "name": "Account Executive", "url": "https://example.com/1"},
+            {"id": "job-data", "name": "Senior Data Engineer", "url": "https://example.com/2"},
+            {"id": "job-legal", "name": "Corporate Counsel", "url": "https://example.com/3"},
+        ]
+    }
+    data_detail = {
+        "uuid": "job-data",
+        "name": "Senior Data Engineer",
+        "description": {"company": "Company intro", "role": "Build ETL pipelines"},
+        "locations": [{"name": "Remote", "workplaceType": "REMOTE"}],
+        "workLocations": ["Remote"],
+    }
+
+    detail_calls = []
+
+    async def mock_get(url, *args, **kwargs):
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.raise_for_status = lambda: None
+        if "job-data" in url:
+            detail_calls.append(url)
+            resp.json = lambda: data_detail
+        elif "job-sales" in url or "job-legal" in url:
+            detail_calls.append(url)
+            resp.json = lambda: {"uuid": "unmatched", "description": {}}
+        else:
+            resp.json = lambda: list_response
+        return resp
+
+    prefs = SearchPreferences(target_roles=["Data Engineer"])
+
+    with patch.object(type(settings), "ats_cache_dir", new_callable=PropertyMock, return_value=tmp_path), patch.object(client.client, "get", side_effect=mock_get) as net_mock:
+        # First call with target role preferences
+        jobs = await client.fetch_jobs("testco", "TestCo", preferences=prefs)
+
+        # Pre-filter should ONLY have called detail for job-data, NOT job-sales or job-legal
+        assert len(jobs) == 1
+        assert jobs[0].title == "Senior Data Engineer"
+        assert len(detail_calls) == 1
+        assert "job-data" in detail_calls[0]
+
+        # Second call should load from disk cache without additional list network request
+        call_count_before = net_mock.call_count
+        jobs_cached = await client.fetch_jobs("testco", "TestCo", preferences=prefs)
+        assert len(jobs_cached) == 1
+        # Net mock should not have been called for list URL again
+        assert net_mock.call_count == call_count_before
+
+

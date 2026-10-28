@@ -139,13 +139,26 @@ class LLMClient:
             return [item_model.model_validate(item) for item in data["items"]]
         raise LLMClientError(f"Expected JSON list of {item_model.__name__}, got {type(data)}")
 
-    def _call_model_with_fallback(self, prompt: str, temperature: float) -> tuple[str | None, Exception | None]:
+    def generate_text(self, prompt: str, temperature: float = 0.3) -> str:
+        """Generate open-ended text response using Gemini with fallback chain."""
+        raw_text, error = self._call_model_with_fallback(
+            prompt, temperature=temperature, response_mime_type="text/plain"
+        )
+        if raw_text is not None:
+            return raw_text.strip()
+        raise LLMClientError(f"LLM text generation failed: {error}")
+
+    def _call_model_with_fallback(
+        self, prompt: str, temperature: float, response_mime_type: str = "application/json"
+    ) -> tuple[str | None, Exception | None]:
         """Try the primary model, then fallbacks on rate limit (429) or resource exhaustion."""
         models = self._get_model_chain()
         last_error: Exception | None = None
 
         for model_name in models:
-            raw_text, error = self._call_model(prompt, temperature, model=model_name)
+            raw_text, error = self._call_model(
+                prompt, temperature, model=model_name, response_mime_type=response_mime_type
+            )
 
             if raw_text is not None:
                 return raw_text, None
@@ -161,13 +174,19 @@ class LLMClient:
 
         return None, last_error
 
-    def _call_model(self, prompt: str, temperature: float, model: str | None = None) -> tuple[str | None, Exception | None]:
+    def _call_model(
+        self,
+        prompt: str,
+        temperature: float,
+        model: str | None = None,
+        response_mime_type: str = "application/json",
+    ) -> tuple[str | None, Exception | None]:
         """Low-level model call with usage tracking and error handling."""
         target_model = model or self.model
         try:
             config = types.GenerateContentConfig(
                 temperature=temperature,
-                response_mime_type="application/json",
+                response_mime_type=response_mime_type,
             )
             response = self.client.models.generate_content(
                 model=target_model,

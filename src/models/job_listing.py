@@ -9,17 +9,29 @@ class JobListing(BaseModel):
     """Normalized job listing across all ATS sources."""
 
     id: str
-    ats_source: str  # platform name from ats_platforms.json (e.g. "lever", "greenhouse", "ashby") or "direct"
+    ats_source: str  # platform name from ats_platforms.json (e.g. "lever", "greenhouse", "ashby", "rippling") or "direct"
     company: str
     company_slug: str
     title: str
     location: str
+    locations: list[str] = Field(default_factory=list)
     remote: bool = False
+    workplace_type: str | None = None  # "Remote" | "Hybrid" | "On-site" | "Unspecified"
+    employment_type: str | None = None  # "Full-time" | "Part-time" | "Contract" | "Internship"
+    experience_level: str | None = None  # "Associate" | "Mid-Senior" | "Lead" | "Executive"
     department: str | None = None
+    team: str | None = None
+    country: str | None = None
     posted_date: date | None = None
+    updated_date: date | None = None
+    deadline_date: date | None = None
     description_html: str
     description_text: str
+    description_sections: dict[str, str] = Field(default_factory=dict)
     application_url: str
+    job_url: str | None = None
+    salary_raw: Any = None
+    has_equity: bool = False
     api_posting_id: str
     metadata: dict = Field(default_factory=dict)
     first_seen: datetime = Field(default_factory=datetime.now)

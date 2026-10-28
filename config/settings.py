@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = Field(default="WARNING", validation_alias="LOG_LEVEL")
 
+    # Cache settings
+    ats_cache_ttl_seconds: int = Field(default=7200, validation_alias="ATS_CACHE_TTL_SECONDS")  # 2 hours default
+
     # Base directory paths
     @property
     def base_dir(self) -> Path:
@@ -76,6 +79,10 @@ class Settings(BaseSettings):
         return self.input_dir / "master_resume.html"
 
     @property
+    def applicant_profile_path(self) -> Path:
+        return self.input_dir / "applicant_profile.yaml"
+
+    @property
     def preferences_path(self) -> Path:
         return self.input_dir / "preferences.yaml"
 
@@ -90,6 +97,12 @@ class Settings(BaseSettings):
     @property
     def tracker_path(self) -> Path:
         return self.data_dir / "tracker.json"
+
+    @property
+    def ats_cache_dir(self) -> Path:
+        cache_path = self.data_dir / "cache" / "ats"
+        cache_path.mkdir(parents=True, exist_ok=True)
+        return cache_path
 
 
 settings = Settings()
