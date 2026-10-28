@@ -30,6 +30,24 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
 }) => {
   if (!job) return null
 
+  const parseAndFormatJD = (rawHtml?: string, rawText?: string): string => {
+    if (!rawHtml && !rawText) return '<p class="text-slate-400">No description provided.</p>'
+
+    let str = rawHtml || rawText || ''
+    if (str.includes('&lt;') || str.includes('&gt;') || str.includes('&quot;') || str.includes('&amp;')) {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(str, 'text/html')
+      str = doc.body.innerHTML || doc.documentElement.textContent || str
+      if (str.includes('&lt;') && str.includes('&gt;')) {
+        const doc2 = parser.parseFromString(str, 'text/html')
+        str = doc2.body.innerHTML || str
+      }
+    }
+    str = str.replace(/style="[^"]*"/gi, '')
+    str = str.replace(/style='[^']*'/gi, '')
+    return str
+  }
+
   const matchPct = Math.round((job.score || 0.5) * 100)
 
   return (
@@ -190,9 +208,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
               Job Description
             </h4>
             <div
-              className="prose prose-invert max-w-none text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-5 rounded-xl border border-slate-800/80 max-h-[400px] overflow-y-auto"
+              className="jd-content bg-slate-950/60 p-5 rounded-xl border border-slate-800/80 max-h-[400px] overflow-y-auto"
               dangerouslySetInnerHTML={{
-                __html: job.description_html || job.description_text || 'No description provided.',
+                __html: parseAndFormatJD(job.description_html, job.description_text),
               }}
             />
           </div>

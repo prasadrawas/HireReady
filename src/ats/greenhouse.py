@@ -1,6 +1,7 @@
 """Greenhouse ATS client implementation."""
 
 from datetime import datetime
+import html
 import logging
 from bs4 import BeautifulSoup
 
@@ -66,7 +67,10 @@ class GreenhouseClient(BaseATSClient):
                     except Exception:
                         posted_date = None
 
-                desc_html = p.get("content", "") or ""
+                raw_content = p.get("content", "") or ""
+                desc_html = html.unescape(raw_content)
+                if "&lt;" in desc_html:
+                    desc_html = html.unescape(desc_html)
                 plain_desc = BeautifulSoup(desc_html, "html.parser").get_text("\n", strip=True) if desc_html else ""
 
                 job_id = generate_job_id(company_slug, title, posting_id)

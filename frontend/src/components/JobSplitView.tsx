@@ -88,6 +88,29 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
     setTimeout(() => setCopiedCoverLetter(false), 2000)
   }
 
+  const parseAndFormatJD = (rawHtml?: string, rawText?: string): string => {
+    if (!rawHtml && !rawText) return '<p class="text-slate-400">No description provided.</p>'
+
+    let str = rawHtml || rawText || ''
+
+    // Decode HTML entities if escaped (e.g. &lt;div&gt;)
+    if (str.includes('&lt;') || str.includes('&gt;') || str.includes('&quot;') || str.includes('&amp;')) {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(str, 'text/html')
+      str = doc.body.innerHTML || doc.documentElement.textContent || str
+      if (str.includes('&lt;') && str.includes('&gt;')) {
+        const doc2 = parser.parseFromString(str, 'text/html')
+        str = doc2.body.innerHTML || str
+      }
+    }
+
+    // Strip inline font-family, font-size, and background styles from ATS boards
+    str = str.replace(/style="[^"]*"/gi, '')
+    str = str.replace(/style='[^']*'/gi, '')
+
+    return str
+  }
+
   // Company avatar fallback color generator
   const getAvatarColor = (name: string) => {
     const colors = [
@@ -533,12 +556,12 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                       About the Role
                     </h3>
                     <div
-                      className="prose prose-invert max-w-none text-xs text-slate-300 leading-relaxed space-y-3"
+                      className="jd-content"
                       dangerouslySetInnerHTML={{
-                        __html:
-                          activeJob.description_html ||
-                          activeJob.description_text ||
-                          'No description provided.',
+                        __html: parseAndFormatJD(
+                          activeJob.description_html,
+                          activeJob.description_text
+                        ),
                       }}
                     />
                   </div>
