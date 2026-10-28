@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar'
 import { JobSplitView } from './components/JobSplitView'
 import { TrackerKanban } from './components/TrackerKanban'
 import { TailorStudio } from './components/TailorStudio'
+import { MasterResumeView } from './components/MasterResumeView'
 import { SettingsView } from './components/SettingsView'
 import { ScanModal } from './components/ScanModal'
 import {
@@ -18,7 +19,7 @@ import {
 import { JobListing, JobOutput, TrackerApplication } from './types'
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'jobs' | 'pipeline' | 'studio' | 'settings'>('jobs')
+  const [activeTab, setActiveTab] = useState<'jobs' | 'pipeline' | 'studio' | 'master_resume' | 'settings'>('jobs')
   const [jobs, setJobs] = useState<JobListing[]>([])
   const [applications, setApplications] = useState<TrackerApplication[]>([])
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null)
@@ -320,6 +321,8 @@ export function App() {
             darkMode={darkMode}
           />
         )}
+
+        {activeTab === 'master_resume' && <MasterResumeView />}
 
         {activeTab === 'settings' && <SettingsView />}
       </main>

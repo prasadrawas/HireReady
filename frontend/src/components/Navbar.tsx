@@ -1,9 +1,9 @@
 import React from 'react'
-import { Briefcase, CheckCircle2, Sliders, Play, Layers, Sun, Moon } from 'lucide-react'
+import { Briefcase, CheckCircle2, Sliders, Play, Layers, Sun, Moon, FileText } from 'lucide-react'
 
 interface NavbarProps {
-  activeTab: 'jobs' | 'pipeline' | 'studio' | 'settings'
-  setActiveTab: (tab: 'jobs' | 'pipeline' | 'studio' | 'settings') => void
+  activeTab: 'jobs' | 'pipeline' | 'studio' | 'master_resume' | 'settings'
+  setActiveTab: (tab: 'jobs' | 'pipeline' | 'studio' | 'master_resume' | 'settings') => void
   onOpenScan: () => void
   isScanning: boolean
   totalJobs: number
@@ -81,6 +81,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" />
               <span>Tailor Studio</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('master_resume')}
+            className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'master_resume'
+                ? `border-${darkMode ? '[#0a66c2]' : 'slate-900'} ${darkMode ? 'text-[#0a66c2]' : 'text-slate-900'}`
+                : `border-transparent ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <FileText className="w-4 h-4" />
+              <span>Master Resume</span>
             </div>
           </button>
 

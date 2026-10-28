@@ -1,4 +1,4 @@
-import { AppStats, JobOutput, ScanResponse, TrackerApplication } from './types'
+import { AppStats, JobOutput, MasterResumeData, ScanResponse, TrackerApplication } from './types'
 
 const API_BASE = '/api'
 
@@ -140,4 +140,10 @@ export function exportApplicationsCSV(applications: TrackerApplication[]): void 
   a.download = `hireready_applications_${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+export async function fetchMasterResumeData(): Promise<{ success: boolean; resume: MasterResumeData; raw_html_exists: boolean }> {
+  const res = await fetch(`${API_BASE}/resume/master/data`)
+  if (!res.ok) throw new Error('Failed to load master resume data')
+  return res.json()
 }

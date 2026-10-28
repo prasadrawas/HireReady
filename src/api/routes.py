@@ -131,6 +131,52 @@ def get_job_html(job_id: str):
     )
 
 
+@router.get("/resume/master/html")
+def get_master_resume_html():
+    path = settings.master_resume_path
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Master resume HTML not found at input/master_resume.html")
+    return FileResponse(
+        path=path,
+        media_type="text/html",
+        filename="master_resume.html",
+    )
+
+
+@router.get("/resume/master/data")
+def get_master_resume_data():
+    try:
+        resume = service.get_resume()
+        return {
+            "success": True,
+            "resume": resume.model_dump(),
+            "raw_html_exists": settings.master_resume_path.exists(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/resume/master/pdf")
+def get_master_resume_pdf():
+    pdf_path = settings.input_dir / "master_resume.pdf"
+    if not pdf_path.exists():
+        html_path = settings.master_resume_path
+        if not html_path.exists():
+            raise HTTPException(status_code=404, detail="Master resume HTML not found.")
+        try:
+            from src.pdf_generator import PDFGenerator
+            generator = PDFGenerator()
+            generator.generate_pdf(html_path, pdf_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to generate master resume PDF: {e}")
+
+    return FileResponse(
+        path=pdf_path,
+        media_type="application/pdf",
+        filename="master_resume.pdf",
+    )
+
+
 @router.get("/tracker")
 def get_tracker():
     return service.get_tracker()

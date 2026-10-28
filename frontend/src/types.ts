@@ -120,3 +120,53 @@ export interface AppStats {
   pipeline: Record<string, number>
   ats_configured_count: number
 }
+
+export interface MasterResumeData {
+  contact: {
+    name: string
+    email: string
+    phone: string
+    linkedin?: string
+    github?: string
+    website?: string
+    location?: string
+  }
+  summary?: string
+  skills: {
+    category: string
+    skills: string[]
+  }[]
+  experience: {
+    company: string
+    title: string
+    location?: string
+    start_date: string
+    end_date?: string
+    bullets: {
+      id: string
+      text: string
+      source_id?: string
+    }[]
+  }[]
+  projects: {
+    name: string
+    description?: string
+    technologies: string[]
+    bullets: {
+      id: string
+      text: string
+      source_id?: string
+    }[]
+    url?: string
+  }[]
+  education: {
+    institution: string
+    degree: string
+    field?: string
+    start_date?: string
+    end_date?: string
+    gpa?: string
+    honors?: string[]
+  }[]
+  certifications: string[]
+}
