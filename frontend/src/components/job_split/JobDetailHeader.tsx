@@ -116,17 +116,17 @@ export const JobDetailHeader: React.FC<JobDetailHeaderProps> = ({
         )}
       </div>
 
-      {/* Primary Button Row — All buttons h-10 (40px) */}
-      <div className="flex flex-wrap items-center gap-2.5 mt-4 pt-2">
+      {/* Primary Button Row — height decreased by 10-12px (30px) */}
+      <div className="flex flex-wrap items-center gap-2 mt-4 pt-2">
         {/* 1. Apply */}
         <a
           href={job.application_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="h-10 px-5 rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
+          className="h-[30px] px-4 rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
         >
           <span>Apply</span>
-          <ExternalLink className="w-4 h-4 ml-0.5" />
+          <ExternalLink className="w-3.5 h-3.5" />
         </a>
 
         {/* 2. Auto-Apply */}
@@ -134,17 +134,17 @@ export const JobDetailHeader: React.FC<JobDetailHeaderProps> = ({
           <button
             onClick={() => onAutoApply(job, false)}
             disabled={isAutoApplying && activeJobIdAutoApplying === job.id}
-            className="h-10 px-5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold inline-flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-60"
+            className="h-[30px] px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
             title="Auto-fill form, upload resume & cover letter, and answer custom questions via Playwright"
           >
             {isAutoApplying && activeJobIdAutoApplying === job.id ? (
               <>
-                <span className="animate-spin text-sm">⟳</span>
+                <span className="animate-spin text-xs">⟳</span>
                 <span>Auto-Applying...</span>
               </>
             ) : (
               <>
-                <Bot className="w-4 h-4" />
+                <Bot className="w-3.5 h-3.5" />
                 <span>Auto-Apply</span>
               </>
             )}
@@ -154,7 +154,7 @@ export const JobDetailHeader: React.FC<JobDetailHeaderProps> = ({
         {/* 3. Stage / Save */}
         <button
           onClick={() => onTrack(job, job.tracker_status === 'saved' ? 'applied' : 'saved')}
-          className={`h-10 px-5 rounded-full text-sm font-semibold inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+          className={`h-[30px] px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
             job.tracker_status
               ? 'border-blue-300 dark:border-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 text-[#0a66c2] dark:text-blue-300'
               : darkMode
@@ -169,12 +169,12 @@ export const JobDetailHeader: React.FC<JobDetailHeaderProps> = ({
         <button
           onClick={() => onTailor(job, false)}
           disabled={isTailoring && activeJobIdTailoring === job.id}
-          className="h-10 px-5 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+          className="h-[30px] px-4 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
         >
           {isTailoring && activeJobIdTailoring === job.id ? (
-            <span className="animate-spin text-sm">⟳</span>
+            <span className="animate-spin text-xs">⟳</span>
           ) : (
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-3.5 h-3.5" />
           )}
           <span>{job.has_tailored_resume ? 'Re-Tailor' : 'Tailor Resume'}</span>
         </button>
@@ -183,20 +183,20 @@ export const JobDetailHeader: React.FC<JobDetailHeaderProps> = ({
         <button
           onClick={() => onTailor(job, true)}
           disabled={isTailoring && activeJobIdTailoring === job.id}
-          className={`h-10 px-5 rounded-full border text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
+          className={`h-[30px] px-4 rounded-full border text-xs font-semibold inline-flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
             darkMode
               ? 'border-[#2a4a6f] bg-[#1e3a5f] hover:bg-[#25466f] text-slate-200'
               : 'border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
           }`}
         >
-          <FileText className={`w-4 h-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+          <FileText className={`w-3.5 h-3.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
           <span>Cover Letter</span>
         </button>
 
         {/* 6. Copy URL (At the END of the row) */}
         <button
           onClick={() => handleCopyUrl(job.application_url)}
-          className={`h-10 w-10 rounded-full border inline-flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs ${
+          className={`h-[30px] w-[30px] rounded-full border inline-flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs ${
             copiedUrl
               ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700'
               : darkMode
@@ -205,7 +205,7 @@ export const JobDetailHeader: React.FC<JobDetailHeaderProps> = ({
           }`}
           title="Copy application URL"
         >
-          {copiedUrl ? <Check className="w-4 h-4" /> : <Link className="w-4 h-4" />}
+          {copiedUrl ? <Check className="w-3.5 h-3.5" /> : <Link className="w-3.5 h-3.5" />}
         </button>
       </div>
     </div>
