@@ -10,6 +10,7 @@ from config.settings import settings
 from src.ats.aggregator import ATSAggregator
 from src.ats.base import parse_ats_url
 from src.ats.generic_client import load_platform_configs
+from src.ats_validator import ATSValidator
 from src.company_research import CompanyResearcher
 from src.cover_letter_generator import CoverLetterGenerator
 from src.html_generator import HTMLGenerator
@@ -20,7 +21,7 @@ from src.models.resume import ResumeData
 from src.pdf_generator import PDFGenerator
 from src.red_flag_detector import RedFlagDetector
 from src.resume_matcher import ResumeMatcher
-from src.resume_parser import ResumeParser
+from src.resume_parser import ResumeParser, load_preferences
 from src.resume_tailor import ResumeTailor
 from src.role_suggester import RoleSuggester
 from src.salary_extractor import SalaryExtractor
@@ -67,11 +68,10 @@ class APIService:
 
     def add_ats_link(self, url: str | None = None, platform: str | None = None, company_slug: str | None = None) -> dict[str, Any]:
         if url:
-            parsed_platform, parsed_slug = parse_ats_url(url)
-            if not parsed_platform or not parsed_slug:
+            parsed = parse_ats_url(url)
+            if not parsed:
                 raise ValueError("Could not detect supported ATS platform from URL.")
-            platform = parsed_platform
-            company_slug = parsed_slug
+            platform, company_slug, _ = parsed
 
         if not platform or not company_slug:
             raise ValueError("Platform and company_slug are required.")
@@ -146,9 +146,13 @@ class APIService:
             })
 
         # Generate role suggestions
-        prefs = SearchPreferences(**self.get_preferences())
-        seen_titles = [j.get("title", "") for j in raw_jobs]
-        suggestions = RoleSuggester.suggest(prefs.target_roles, seen_titles)
+        suggestions = {}
+        try:
+            prefs = load_preferences()
+            seen_titles = [j.get("title", "") for j in raw_jobs]
+            suggestions = RoleSuggester.suggest(prefs.target_roles, seen_titles)
+        except Exception as e:
+            logger.debug("Failed to generate role suggestions: %s", e)
 
         return {
             "jobs": enriched_jobs,
@@ -310,7 +314,7 @@ class APIService:
         """Stream scan execution progress via Server-Sent Events."""
         try:
             resume = self.get_resume()
-            prefs = SearchPreferences(**self.get_preferences())
+            prefs = load_preferences()
         except Exception as e:
             yield json.dumps({"type": "error", "message": f"Setup error: {e}"})
             return

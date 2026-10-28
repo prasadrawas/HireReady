@@ -1,0 +1,25 @@
+{
+  "name": "hireready",
+  "version": "1.0.0",
+  "description": "HireReady — Autonomous ATS Job Scanner & Resume Tailor",
+  "private": true,
+  "scripts": {
+    "start": "make start",
+    "dev": "make dev",
+    "build": "npm --prefix frontend run build",
+    "serve": "./venv/bin/python main.py serve",
+    "scan": "./venv/bin/python main.py scan",
+    "setup": "./venv/bin/python main.py setup",
+    "test": "./venv/bin/pytest"
+  },
+  "keywords": [
+    "job-scanner",
+    "ats",
+    "resume-tailor",
+    "fastapi",
+    "react",
+    "gemini"
+  ],
+  "author": "Prasad Rawas",
+  "license": "ISC"
+}
