@@ -93,35 +93,20 @@
     ]
   },
   "workable": {
-    "enabled": true,
-    "rate_limit_delay_seconds": 1.0,
+    "enabled": false,
+    "rate_limit_delay_seconds": 2.0,
+    "_note": "Workable deprecated their public job listing API. Most companies returned 0 jobs. Disabled until Workable restores public access.",
     "companies": [
-      {"slug": "taxfix", "name": "Taxfix"},
-      {"slug": "miro-2", "name": "Miro"},
-      {"slug": "sentry-io", "name": "Sentry"},
-      {"slug": "descript", "name": "Descript"},
-      {"slug": "deel-2", "name": "Deel"},
-      {"slug": "productboard", "name": "Productboard"},
-      {"slug": "factorial-1", "name": "Factorial"},
-      {"slug": "typeform", "name": "Typeform"},
-      {"slug": "komoot", "name": "Komoot"},
-      {"slug": "volocopter", "name": "Volocopter"}
+      {"slug": "treatwell", "name": "Treatwell"}
     ]
   },
   "smartrecruiters": {
     "enabled": true,
     "rate_limit_delay_seconds": 1.5,
     "companies": [
-      {"slug": "Visa", "name": "Visa"},
-      {"slug": "BOSCH", "name": "Bosch"},
-      {"slug": "Spotify", "name": "Spotify"},
-      {"slug": "IKEA", "name": "IKEA"},
-      {"slug": "T-Mobile", "name": "T-Mobile"},
-      {"slug": "McDonald", "name": "McDonald's"},
-      {"slug": "Swatch", "name": "Swatch Group"},
-      {"slug": "Equinix", "name": "Equinix"},
-      {"slug": "Adidas", "name": "Adidas"},
-      {"slug": "Square1", "name": "Square"}
+      {"slug": "BoschGroup", "name": "Bosch"},
+      {"slug": "Uber", "name": "Uber"},
+      {"slug": "McDonaldsCorporation", "name": "McDonald's"}
     ]
   },
   "recruitee": {

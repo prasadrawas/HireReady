@@ -141,16 +141,34 @@ class APIService:
             job_id = j.get("id")
             ds = deep_scores.get(job_id, {})
             
-            # Clean and unescape HTML/text
+            # Clean and unescape HTML — handle double/triple encoding from any ATS
             desc_html = j.get("description_html") or ""
-            if "&lt;" in desc_html:
-                desc_html = html.unescape(desc_html)
-                if "&lt;" in desc_html:
-                    desc_html = html.unescape(desc_html)
-            
+            passes = 3
+            while passes > 0 and ("&lt;" in desc_html or "&amp;lt;" in desc_html or "&amp;amp;" in desc_html):
+                unescaped = html.unescape(desc_html)
+                if unescaped == desc_html:
+                    break
+                desc_html = unescaped
+                passes -= 1
+
+            # Clean description_text — strip any leaked HTML tags
             desc_text = j.get("description_text") or ""
-            if "<div" in desc_text or "<p" in desc_text or "&lt;" in desc_text:
-                desc_text = BeautifulSoup(desc_html or desc_text, "html.parser").get_text("\n", strip=True)
+            if desc_text:
+                # Unescape text too
+                passes = 3
+                while passes > 0 and ("&lt;" in desc_text or "&amp;" in desc_text):
+                    unescaped = html.unescape(desc_text)
+                    if unescaped == desc_text:
+                        break
+                    desc_text = unescaped
+                    passes -= 1
+                # If text still contains HTML tags, extract plain text
+                if "<div" in desc_text or "<p" in desc_text or "<br" in desc_text or "<li" in desc_text:
+                    desc_text = BeautifulSoup(desc_text, "html.parser").get_text("\n", strip=True)
+
+            # If no plain text, derive from HTML
+            if not desc_text and desc_html:
+                desc_text = BeautifulSoup(desc_html, "html.parser").get_text("\n", strip=True)
 
             j["description_html"] = desc_html
             j["description_text"] = desc_text
@@ -433,11 +451,15 @@ class APIService:
         scored_pairs = scorer.rank_quick(jobs_to_process, resume, prefs)
         quick_score_map = {job.id: qscore for job, qscore in scored_pairs}
 
-        candidates = [job for job, qscore in scored_pairs if qscore.pass_to_deep_scoring][:settings.max_deep_score_candidates]
-        if not candidates:
-            candidates = [job for job, _ in scored_pairs[:settings.max_deep_score_candidates]]
+        # All jobs that passed quick score threshold
+        all_passing = [job for job, qscore in scored_pairs if qscore.pass_to_deep_scoring]
+        if not all_passing:
+            all_passing = [job for job, _ in scored_pairs]
 
-        # Deep Scoring
+        # Pick top N for Gemini deep scoring
+        candidates = all_passing[:settings.max_deep_score_candidates]
+
+        # Deep Scoring (only top N)
         yield json.dumps({"type": "status", "message": f"Deep scoring {len(candidates)} candidates with Gemini..."})
         deep_scores = scorer.deep_score_batch(candidates, resume)
 
@@ -450,13 +472,26 @@ class APIService:
                     ds.role_fit = f"Scored by keyword matching (Gemini unavailable). Title: {qs.title_match:.0%}, overlap: {qs.keyword_overlap:.0%}"
             deep_score_map[ds.job_id] = ds
 
+        # For jobs NOT sent to Gemini, use quick score as display score
+        for job in all_passing:
+            if job.id not in deep_score_map:
+                qs = quick_score_map.get(job.id)
+                if qs:
+                    deep_score_map[job.id] = DeepScore(
+                        job_id=job.id,
+                        semantic_match=qs.composite_score,
+                        role_fit=f"Quick score: title {qs.title_match:.0%}, keywords {qs.keyword_overlap:.0%}, seniority {qs.seniority_match:.0%}",
+                        key_gaps=[],
+                        recommendation="good_match" if qs.composite_score >= 0.6 else "weak_match",
+                    )
+
+        # Rank ALL passing jobs
         ranked_jobs = sorted(
-            candidates,
-            key=lambda j: deep_score_map.get(j.id, DeepScore(job_id=j.id, semantic_match=0.0, role_fit="", key_gaps=[], recommendation="skip")).semantic_match,
-            reverse=True,
+            all_passing,
+            key=lambda j: (-deep_score_map.get(j.id, DeepScore(job_id=j.id, semantic_match=0.0, role_fit="", key_gaps=[], recommendation="skip")).semantic_match, j.company.lower(), j.title.lower()),
         )
 
-        # Cache last scan
+        # Cache ALL ranked jobs
         last_scan_cache = {
             "jobs": [j.model_dump(mode="json") for j in ranked_jobs],
             "deep_scores": {k: v.model_dump(mode="json") for k, v in deep_score_map.items()},
@@ -465,6 +500,6 @@ class APIService:
 
         yield json.dumps({
             "type": "complete",
-            "message": f"Scan finished successfully! {len(ranked_jobs)} top jobs ranked.",
+            "message": f"Scan finished successfully! {len(ranked_jobs)} jobs ranked ({len(candidates)} deep-scored with Gemini).",
             "top_count": len(ranked_jobs),
         })

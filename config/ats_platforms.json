@@ -71,23 +71,24 @@
   },
   "workable": {
     "request": {
-      "method": "GET",
-      "url_template": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
-      "headers": {},
-      "body": null
+      "method": "POST",
+      "url_template": "https://apply.workable.com/api/v3/accounts/{slug}/jobs",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"query": "", "location": [], "department": [], "worktype": [], "remote": []}
     },
     "response": {
-      "listings_path": "$.jobs",
-      "id_field": "shortcode",
+      "listings_path": "$.results",
+      "listings_path_fallback": ["$.jobs", "$"],
+      "id_field": ["shortcode", "id"],
       "title_field": "title",
-      "description_html_field": "description",
+      "description_html_field": ["description", "full_description"],
       "description_text_field": null,
       "location_field": "location",
       "department_field": "department",
       "remote_field": null,
-      "posted_date_field": "published_on",
+      "posted_date_field": ["published_on", "created_at"],
       "date_format": "iso",
-      "application_url_field": "url",
+      "application_url_field": ["url", "shortlink"],
       "application_url_fallback": "https://apply.workable.com/{slug}/j/{id}",
       "extra_description_field": null
     }

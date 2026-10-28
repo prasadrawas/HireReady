@@ -11,6 +11,7 @@ import {
   fetchTracker,
   fetchJobOutput,
   tailorJob,
+  tailorBulk,
   updateTrackerStatus,
   deleteTrackerJob,
 } from './api'
@@ -26,7 +27,38 @@ export function App() {
   const [isScanning, setIsScanning] = useState(false)
   const [isTailoring, setIsTailoring] = useState(false)
   const [activeJobIdTailoring, setActiveJobIdTailoring] = useState<string | null>(null)
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error'; undoAction?: () => void } | null>(null)
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hireready_darkmode') === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [bulkTailorIds, setBulkTailorIds] = useState<Set<string>>(new Set())
+
+  // Persist dark mode
+  useEffect(() => {
+    try {
+      localStorage.setItem('hireready_darkmode', darkMode.toString())
+    } catch {}
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
+  // Page title based on active tab
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      jobs: 'Jobs - HireReady',
+      pipeline: 'Pipeline - HireReady',
+      studio: 'Tailor Studio - HireReady',
+      settings: 'Settings - HireReady',
+    }
+    document.title = titles[activeTab] || 'HireReady — AI Resume Pipeline'
+  }, [activeTab])
 
   useEffect(() => {
     loadInitialData()
@@ -66,9 +98,9 @@ export function App() {
     }
   }
 
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), 3500)
+  const showNotification = (message: string, type: 'success' | 'error' = 'success', undoAction?: () => void) => {
+    setNotification({ message, type, undoAction })
+    setTimeout(() => setNotification(null), 4500)
   }
 
   const handleSelectJob = (job: JobListing) => {
@@ -94,7 +126,7 @@ export function App() {
       const trackerData = await fetchTracker()
       setApplications(trackerData.applications || [])
 
-      showNotification(`Tailored resume & assets created for ${job.company}!`)
+      showNotification(`Tailored resume & assets created for ${job.company} - ${job.title}!`)
     } catch (err: any) {
       console.error('Tailor error:', err)
       showNotification(err.message || 'Failed to tailor resume', 'error')
@@ -104,7 +136,58 @@ export function App() {
     }
   }
 
+  const handleBulkTailor = async (coverLetter = false) => {
+    if (bulkTailorIds.size === 0) return
+    setIsTailoring(true)
+    const ids = Array.from(bulkTailorIds)
+    try {
+      const { results } = await tailorBulk(ids, coverLetter)
+      const successCount = Object.values(results).filter((r: any) => r.success).length
+      const failCount = Object.values(results).filter((r: any) => !r.success).length
+
+      // Update local job tailored status for successful ones
+      setJobs((prev) =>
+        prev.map((j) => {
+          if (results[j.id]?.success) {
+            return { ...j, has_tailored_resume: true }
+          }
+          return j
+        })
+      )
+
+      // Refresh applications tracker
+      const trackerData = await fetchTracker()
+      setApplications(trackerData.applications || [])
+
+      setBulkTailorIds(new Set())
+
+      if (failCount > 0) {
+        showNotification(`Bulk tailor: ${successCount} succeeded, ${failCount} failed`, failCount > successCount ? 'error' : 'success')
+      } else {
+        showNotification(`Bulk tailor complete: ${successCount} resumes tailored!`)
+      }
+    } catch (err: any) {
+      console.error('Bulk tailor error:', err)
+      showNotification(err.message || 'Bulk tailor failed', 'error')
+    } finally {
+      setIsTailoring(false)
+    }
+  }
+
+  const handleToggleBulkId = (jobId: string) => {
+    setBulkTailorIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(jobId)) {
+        next.delete(jobId)
+      } else {
+        next.add(jobId)
+      }
+      return next
+    })
+  }
+
   const handleTrack = async (job: JobListing, newStatus: string) => {
+    const oldStatus = job.tracker_status
     try {
       await updateTrackerStatus(job.id, newStatus)
       const trackerData = await fetchTracker()
@@ -112,7 +195,20 @@ export function App() {
       setJobs((prev) =>
         prev.map((j) => (j.id === job.id ? { ...j, tracker_status: newStatus } : j))
       )
-      showNotification(`Moved ${job.title} to "${newStatus}"`)
+      showNotification(
+        `Moved ${job.title} to "${newStatus}"`,
+        'success',
+        oldStatus
+          ? () => {
+              updateTrackerStatus(job.id, oldStatus).then(() => {
+                fetchTracker().then((td) => setApplications(td.applications || []))
+                setJobs((prev) =>
+                  prev.map((j) => (j.id === job.id ? { ...j, tracker_status: oldStatus } : j))
+                )
+              })
+            }
+          : undefined
+      )
     } catch (err) {
       console.error('Track error:', err)
     }
@@ -142,7 +238,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f2ee] text-slate-900 flex flex-col selection:bg-[#0a66c2] selection:text-white">
+    <div className={`min-h-screen ${darkMode ? 'bg-[#1a1a2e] text-slate-200' : 'bg-[#f4f2ee] text-slate-900'} flex flex-col selection:bg-[#0a66c2] selection:text-white`}>
       {/* Toast Notification */}
       {notification && (
         <div
@@ -153,6 +249,17 @@ export function App() {
           }`}
         >
           <span>{notification.message}</span>
+          {notification.undoAction && (
+            <button
+              onClick={() => {
+                notification.undoAction?.()
+                setNotification(null)
+              }}
+              className="ml-2 px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold cursor-pointer transition-colors"
+            >
+              Undo
+            </button>
+          )}
         </div>
       )}
 
@@ -163,6 +270,8 @@ export function App() {
         onOpenScan={() => setIsScanningModalOpen(true)}
         isScanning={isScanning}
         totalJobs={jobs.length}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode((d) => !d)}
       />
 
       {/* Main Tab View */}
@@ -177,6 +286,10 @@ export function App() {
             tailoredOutput={tailoredOutput}
             isTailoring={isTailoring}
             activeJobIdTailoring={activeJobIdTailoring}
+            bulkTailorIds={bulkTailorIds}
+            onToggleBulkId={handleToggleBulkId}
+            onBulkTailor={handleBulkTailor}
+            darkMode={darkMode}
           />
         )}
 
@@ -192,6 +305,7 @@ export function App() {
                 setActiveTab('jobs')
               }
             }}
+            darkMode={darkMode}
           />
         )}
 
@@ -203,6 +317,7 @@ export function App() {
             tailoredOutput={tailoredOutput}
             onTailor={handleTailor}
             isTailoring={isTailoring}
+            darkMode={darkMode}
           />
         )}
 

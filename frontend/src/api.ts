@@ -1,4 +1,4 @@
-import { AppStats, JobListing, JobOutput, ScanResponse, TrackerApplication } from './types'
+import { AppStats, JobOutput, ScanResponse, TrackerApplication } from './types'
 
 const API_BASE = '/api'
 
@@ -99,4 +99,45 @@ export async function deleteAtsLink(platform: string, company_slug: string) {
   })
   if (!res.ok) throw new Error('Failed to delete ATS link')
   return res.json()
+}
+
+export async function tailorBulk(jobIds: string[], coverLetter = false): Promise<{ results: Record<string, any> }> {
+  const results: Record<string, any> = {}
+  for (const id of jobIds) {
+    try {
+      const res = await tailorJob(id, coverLetter)
+      results[id] = { success: true, data: res.data }
+    } catch (err: any) {
+      results[id] = { success: false, error: err.message }
+    }
+  }
+  return { results }
+}
+
+export function exportApplicationsCSV(applications: TrackerApplication[]): void {
+  const headers = ['Company', 'Title', 'Status', 'Coverage', 'Salary', 'Applied URL', 'Submitted', 'Updated']
+  const rows = applications.map((a) => [
+    a.company,
+    a.title,
+    a.status,
+    a.coverage_score ? `${Math.round(a.coverage_score * 100)}%` : '',
+    a.salary || '',
+    a.application_url,
+    a.submitted_at || '',
+    a.updated_at || '',
+  ])
+  const csv = [headers, ...rows]
+    .map((r) =>
+      r
+        .map((c) => `"${(c || '').replace(/"/g, '""')}"`)
+        .join(',')
+    )
+    .join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `hireready_applications_${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }

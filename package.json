@@ -4,13 +4,16 @@
   "description": "HireReady — Autonomous ATS Job Scanner & Resume Tailor",
   "private": true,
   "scripts": {
-    "start": "make start",
-    "dev": "make dev",
+    "start": "npm run build && npm run serve",
+    "dev": "concurrently \"npm run serve:api -- --reload\" \"npm --prefix frontend run dev\"",
     "build": "npm --prefix frontend run build",
-    "serve": "./venv/bin/python main.py serve",
+    "serve": "./venv/bin/uvicorn src.api.app:app --host 0.0.0.0 --port 8000",
+    "serve:api": "./venv/bin/uvicorn src.api.app:app --port 8000",
     "scan": "./venv/bin/python main.py scan",
     "setup": "./venv/bin/python main.py setup",
-    "test": "./venv/bin/pytest"
+    "test": "./venv/bin/python -m pytest tests/ -v",
+    "install:all": "pip install -r requirements.txt && npm --prefix frontend install",
+    "clean": "find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; rm -rf .pytest_cache frontend/dist"
   },
   "keywords": [
     "job-scanner",

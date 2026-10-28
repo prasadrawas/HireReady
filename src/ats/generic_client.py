@@ -1,6 +1,7 @@
 """Config-driven generic ATS client. Reads field mappings from ats_platforms.json."""
 
 import asyncio
+import html as html_mod
 import json
 import logging
 from datetime import datetime
@@ -145,16 +146,39 @@ class GenericATSClient(BaseATSClient):
             title_lower = title.lower()
             remote = "remote" in loc_lower or "remote" in title_lower
 
-        # Description HTML
+        # Description HTML — unescape at source so it's clean everywhere downstream
         desc_html = str(self._get_field(posting, cfg.get("description_html_field", "")) or "")
+        # Some ATS APIs (Greenhouse) return double-escaped HTML: &lt;p&gt; instead of <p>
+        max_unescape = 3
+        while max_unescape > 0 and ("&lt;" in desc_html or "&amp;lt;" in desc_html):
+            unescaped = html_mod.unescape(desc_html)
+            if unescaped == desc_html:
+                break
+            desc_html = unescaped
+            max_unescape -= 1
+
         extra_desc_field = cfg.get("extra_description_field")
         if extra_desc_field:
-            extra = self._get_field(posting, extra_desc_field)
+            extra = str(self._get_field(posting, extra_desc_field) or "")
             if extra:
+                # Unescape extra field too
+                extra = html_mod.unescape(extra)
                 desc_html += f"\n<div>{extra}</div>"
 
         # Description plain text
         desc_text = str(self._get_field(posting, cfg.get("description_text_field")) or "") if cfg.get("description_text_field") else ""
+        if desc_text:
+            # Unescape plain text field
+            max_unescape = 3
+            while max_unescape > 0 and ("&lt;" in desc_text or "&amp;" in desc_text):
+                unescaped = html_mod.unescape(desc_text)
+                if unescaped == desc_text:
+                    break
+                desc_text = unescaped
+                max_unescape -= 1
+            # If plain text still has HTML tags, strip them
+            if "<div" in desc_text or "<p" in desc_text or "<br" in desc_text or "<li" in desc_text:
+                desc_text = BeautifulSoup(desc_text, "html.parser").get_text("\n", strip=True)
         if not desc_text and desc_html:
             desc_text = BeautifulSoup(desc_html, "html.parser").get_text("\n", strip=True)
 

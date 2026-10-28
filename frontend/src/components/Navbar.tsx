@@ -1,5 +1,5 @@
 import React from 'react'
-import { Briefcase, CheckCircle2, Sliders, Play, Layers } from 'lucide-react'
+import { Briefcase, CheckCircle2, Sliders, Play, Layers, Sun, Moon } from 'lucide-react'
 
 interface NavbarProps {
   activeTab: 'jobs' | 'pipeline' | 'studio' | 'settings'
@@ -7,6 +7,8 @@ interface NavbarProps {
   onOpenScan: () => void
   isScanning: boolean
   totalJobs: number
+  darkMode: boolean
+  onToggleDark: () => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,9 +17,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenScan,
   isScanning,
   totalJobs,
+  darkMode,
+  onToggleDark,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-slate-200 shadow-xs">
+    <header className={`sticky top-0 z-40 w-full border-b shadow-xs ${darkMode ? 'bg-[#16213e] border-[#1e3a5f]' : 'bg-white border-slate-200'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
@@ -25,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
-            <span className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1">
+            <span className={`text-lg font-bold tracking-tight flex items-center gap-1 ${darkMode ? 'text-slate-100' : 'text-slate-900'}`}>
               Hire<span className="text-[#0a66c2]">Ready</span>
             </span>
           </div>
@@ -37,15 +41,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('jobs')}
             className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'jobs'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? `border-${darkMode ? '[#0a66c2]' : 'slate-900'} ${darkMode ? 'text-[#0a66c2]' : 'text-slate-900'}`
+                : `border-transparent ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`
             }`}
           >
             <div className="flex items-center gap-1.5">
               <Briefcase className="w-4 h-4" />
               <span>Jobs</span>
               {totalJobs > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 font-bold border border-slate-200">
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold border ${darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
                   {totalJobs}
                 </span>
               )}
@@ -56,8 +60,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('pipeline')}
             className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'pipeline'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? `border-${darkMode ? '[#0a66c2]' : 'slate-900'} ${darkMode ? 'text-[#0a66c2]' : 'text-slate-900'}`
+                : `border-transparent ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`
             }`}
           >
             <div className="flex items-center gap-1.5">
@@ -70,8 +74,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('studio')}
             className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'studio'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? `border-${darkMode ? '[#0a66c2]' : 'slate-900'} ${darkMode ? 'text-[#0a66c2]' : 'text-slate-900'}`
+                : `border-transparent ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`
             }`}
           >
             <div className="flex items-center gap-1.5">
@@ -84,8 +88,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('settings')}
             className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'settings'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? `border-${darkMode ? '[#0a66c2]' : 'slate-900'} ${darkMode ? 'text-[#0a66c2]' : 'text-slate-900'}`
+                : `border-transparent ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`
             }`}
           >
             <div className="flex items-center gap-1.5">
@@ -95,8 +99,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Scan Action */}
-        <div className="flex items-center gap-3">
+        {/* Scan Action + Dark Mode Toggle */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onToggleDark}
+            className={`p-2 rounded-full transition-all cursor-pointer ${darkMode ? 'hover:bg-[#1e3a5f] text-amber-400' : 'hover:bg-slate-100 text-slate-500'}`}
+            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+
           <button
             onClick={onOpenScan}
             disabled={isScanning}

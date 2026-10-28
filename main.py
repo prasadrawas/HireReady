@@ -154,36 +154,47 @@ async def _async_scan(args) -> tuple[list[JobListing], ResumeData | None]:
     # Build quick score lookup
     quick_score_map = {job.id: qscore for job, qscore in scored_pairs}
 
-    candidates_for_deep = [
-        job for job, qscore in scored_pairs if qscore.pass_to_deep_scoring
-    ][:settings.max_deep_score_candidates]
-    if not candidates_for_deep:
-        candidates_for_deep = [job for job, _ in scored_pairs[:settings.max_deep_score_candidates]]
+    # All jobs that passed quick score threshold
+    all_passing = [job for job, qscore in scored_pairs if qscore.pass_to_deep_scoring]
+    if not all_passing:
+        all_passing = [job for job, _ in scored_pairs]
 
-    print(f"      • {len(candidates_for_deep)} top candidates selected for deep scoring")
+    # Pick top N for Gemini deep scoring
+    candidates_for_deep = all_passing[:settings.max_deep_score_candidates]
+    print(f"      • {len(all_passing)} jobs passed threshold, {len(candidates_for_deep)} selected for deep scoring")
 
-    # Step 3: Deep scoring with Gemini
-    print("\n[3/4] 🧠 Deep scoring with Gemini (role fit & gaps)...", end="", flush=True)
+    # Step 3: Deep scoring with Gemini (only top N)
+    print(f"\n[3/4] 🧠 Deep scoring top {len(candidates_for_deep)} with Gemini...", end="", flush=True)
     deep_scores = scorer.deep_score_batch(candidates_for_deep, resume)
     print(" done")
 
-    # Create mapping of job_id -> deep_score
-    # If Gemini returned fallback scores (0.5), replace with quick composite score
+    # Build deep score map from Gemini results
     deep_score_map: dict[str, DeepScore] = {}
     for ds in deep_scores:
-        if ds.semantic_match == 0.5 and "Gemini API unavailable" in (ds.key_gaps[0] if ds.key_gaps else ""):
-            # Use quick score as the display score instead of flat 0.5
+        if ds.semantic_match == 0.5 and ds.key_gaps and "Gemini API unavailable" in ds.key_gaps[0]:
             qs = quick_score_map.get(ds.job_id)
             if qs:
                 ds.semantic_match = qs.composite_score
-                ds.role_fit = f"Scored by keyword matching (Gemini unavailable). Title match: {qs.title_match:.0%}, keyword overlap: {qs.keyword_overlap:.0%}"
+                ds.role_fit = f"Scored by keyword matching (Gemini unavailable). Title: {qs.title_match:.0%}, overlap: {qs.keyword_overlap:.0%}"
         deep_score_map[ds.job_id] = ds
 
-    # Re-rank candidates by semantic match
+    # For jobs NOT sent to Gemini, use their quick score as the display score
+    for job in all_passing:
+        if job.id not in deep_score_map:
+            qs = quick_score_map.get(job.id)
+            if qs:
+                deep_score_map[job.id] = DeepScore(
+                    job_id=job.id,
+                    semantic_match=qs.composite_score,
+                    role_fit=f"Quick score: title {qs.title_match:.0%}, keywords {qs.keyword_overlap:.0%}, seniority {qs.seniority_match:.0%}",
+                    key_gaps=[],
+                    recommendation="good_match" if qs.composite_score >= 0.6 else "weak_match",
+                )
+
+    # Rank ALL passing jobs (Gemini-scored first, then quick-scored)
     ranked_jobs = sorted(
-        candidates_for_deep,
-        key=lambda j: deep_score_map.get(j.id, DeepScore(job_id=j.id, semantic_match=0.0, role_fit="", key_gaps=[], recommendation="skip")).semantic_match,
-        reverse=True,
+        all_passing,
+        key=lambda j: (-deep_score_map.get(j.id, DeepScore(job_id=j.id, semantic_match=0.0, role_fit="", key_gaps=[], recommendation="skip")).semantic_match, j.company.lower(), j.title.lower()),
     )
 
     # Save scores in seen_jobs.json
@@ -199,7 +210,7 @@ async def _async_scan(args) -> tuple[list[JobListing], ResumeData | None]:
             })
     aggregator.save_seen_jobs(seen_jobs)
 
-    # Cache last scan in memory/file for `python main.py tailor 1,2`
+    # Cache ALL ranked jobs (not just top 30)
     last_scan_cache = {
         "jobs": [j.model_dump(mode="json") for j in ranked_jobs],
         "deep_scores": {k: v.model_dump(mode="json") for k, v in deep_score_map.items()},

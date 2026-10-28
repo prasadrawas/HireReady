@@ -130,3 +130,48 @@
   color: #15803d;
   font-weight: 600;
 }
+
+/* Dark mode */
+.dark body {
+  background-color: #1a1a2e;
+  color: #e2e8f0;
+}
+.dark .glass-panel,
+.dark .glass-card {
+  background: #16213e;
+  border-color: #1e3a5f;
+}
+
+/* Skeleton loader */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, #1e3a5f 25%, #16213e 50%, #1e3a5f 75%);
+  background-size: 200px 100%;
+}
+
+/* Diff styles */
+.diff-add {
+  background-color: #dcfce7;
+  color: #166534;
+}
+.diff-remove {
+  background-color: #fef2f2;
+  color: #991b1b;
+  text-decoration: line-through;
+}
+.diff-keyword {
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 2px;
+}
