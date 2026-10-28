@@ -65,44 +65,24 @@ def get_stats() -> dict[str, Any]:
 @router.get("/jobs")
 def get_jobs(
     search: str | None = None,
+    platform: str | None = None,
+    company: str | None = None,
+    remote_only: bool = False,
+    min_salary: int = Query(0, ge=0),
     min_score: float = Query(0.0, ge=0.0, le=1.0),
     page: int = Query(1, ge=1),
     page_size: int = Query(0, ge=0),
 ) -> dict[str, Any]:
-    data = service.get_jobs()
-    jobs = data.get("jobs", [])
-
-    if min_score > 0:
-        jobs = [j for j in jobs if (j.get("score") or 0) >= min_score]
-
-    if search:
-        q = search.lower()
-        jobs = [
-            j for j in jobs
-            if q in j.get("title", "").lower()
-            or q in j.get("company", "").lower()
-            or q in j.get("location", "").lower()
-            or q in j.get("ats_source", "").lower()
-        ]
-
-    total = len(jobs)
-    if page_size > 0:
-        start_idx = (page - 1) * page_size
-        end_idx = start_idx + page_size
-        paginated_jobs = jobs[start_idx:end_idx]
-    else:
-        paginated_jobs = jobs
-
-    total_pages = (total + page_size - 1) // page_size if page_size > 0 else 1
-
-    return {
-        "jobs": paginated_jobs,
-        "total": total,
-        "page": page,
-        "page_size": page_size or total,
-        "total_pages": total_pages,
-        "suggestions": data.get("suggestions", []),
-    }
+    return service.get_jobs(
+        search=search,
+        platform=platform,
+        company=company,
+        remote_only=remote_only,
+        min_salary=min_salary,
+        min_score=min_score,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @router.get("/scan/stream")

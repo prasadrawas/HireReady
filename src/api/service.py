@@ -73,9 +73,28 @@ class APIService:
 
     # --- Jobs & Output Queries ---
 
-    def get_jobs(self) -> dict[str, Any]:
-        """Fetch enriched, cleaned job listings from last scan."""
-        return self.job_query_service.get_jobs()
+    def get_jobs(
+        self,
+        search: str | None = None,
+        platform: str | None = None,
+        company: str | None = None,
+        remote_only: bool = False,
+        min_salary: int = 0,
+        min_score: float = 0.0,
+        page: int = 1,
+        page_size: int = 0,
+    ) -> dict[str, Any]:
+        """Fetch enriched, cleaned job listings from MongoDB or last scan with pagination."""
+        return self.job_query_service.get_jobs(
+            search=search,
+            platform=platform,
+            company=company,
+            remote_only=remote_only,
+            min_salary=min_salary,
+            min_score=min_score,
+            page=page,
+            page_size=page_size,
+        )
 
     def get_job_output(self, job_id: str) -> dict[str, Any]:
         """Fetch generated artifacts for a tailored job."""

@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     # Cache settings
     ats_cache_ttl_seconds: int = Field(default=7200, validation_alias="ATS_CACHE_TTL_SECONDS")  # 2 hours default
 
+    # MongoDB Atlas NoSQL configuration
+    mongodb_uri: str = Field(default="", validation_alias="MONGODB_URI")
+    mongodb_db_name: str = Field(default="hireready", validation_alias="MONGODB_DB_NAME")
+    mongodb_collection: str = Field(default="job_listings", validation_alias="MONGODB_COLLECTION")
+
     # Base directory paths
     @property
     def base_dir(self) -> Path:
