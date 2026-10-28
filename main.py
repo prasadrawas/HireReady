@@ -893,10 +893,32 @@ def run_cron(args):
     print(f"Logs saved to: {settings.data_dir / 'cron.log'}")
 
 
+def run_serve(args):
+    """Start the HireReady Web API & UI server."""
+    import uvicorn
+    host = getattr(args, "host", "0.0.0.0")
+    port = getattr(args, "port", 8000)
+    reload = getattr(args, "reload", False)
+    print("=" * 80)
+    print("🚀 HireReady — Web Dashboard & API Server")
+    print("=" * 80)
+    print(f"\n  • Local URL : http://localhost:{port}")
+    print(f"  • API Docs  : http://localhost:{port}/docs\n")
+    print("Press Ctrl+C to stop the server.\n")
+    uvicorn.run("src.api.app:app", host=host, port=port, reload=reload)
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="HireReady — AI-Powered Resume Tailoring Pipeline")
     subparsers = parser.add_subparsers(dest="subcommand", help="Available subcommands")
+
+    # serve
+    p_serve = subparsers.add_parser("serve", help="Start the HireReady Web UI & API server")
+    p_serve.add_argument("--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)")
+    p_serve.add_argument("--port", type=int, default=8000, help="Port to bind (default: 8000)")
+    p_serve.add_argument("--reload", action="store_true", help="Enable auto-reload on code change")
+    p_serve.set_defaults(func=run_serve)
 
     # setup
     p_setup = subparsers.add_parser("setup", help="Validate setup, resume, preferences, and ATS configuration")

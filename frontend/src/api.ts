@@ -1,0 +1,102 @@
+import { AppStats, JobListing, JobOutput, ScanResponse, TrackerApplication } from './types'
+
+const API_BASE = '/api'
+
+export async function fetchStats(): Promise<AppStats> {
+  const res = await fetch(`${API_BASE}/stats`)
+  if (!res.ok) throw new Error('Failed to fetch stats')
+  return res.json()
+}
+
+export async function fetchJobs(search = '', minScore = 0): Promise<ScanResponse> {
+  const params = new URLSearchParams()
+  if (search) params.set('search', search)
+  if (minScore > 0) params.set('min_score', minScore.toString())
+  const res = await fetch(`${API_BASE}/jobs?${params}`)
+  if (!res.ok) throw new Error('Failed to fetch jobs')
+  return res.json()
+}
+
+export async function tailorJob(jobId: string, coverLetter = true): Promise<{ success: boolean; data: JobOutput }> {
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/tailor`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cover_letter: coverLetter }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed to tailor resume' }))
+    throw new Error(err.detail || 'Failed to tailor resume')
+  }
+  return res.json()
+}
+
+export async function fetchJobOutput(jobId: string): Promise<JobOutput> {
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/output`)
+  if (!res.ok) throw new Error('Failed to fetch job output')
+  return res.json()
+}
+
+export async function fetchTracker(): Promise<{ applications: TrackerApplication[] }> {
+  const res = await fetch(`${API_BASE}/tracker`)
+  if (!res.ok) throw new Error('Failed to fetch tracker')
+  return res.json()
+}
+
+export async function updateTrackerStatus(jobId: string, status: string, notes?: string) {
+  const res = await fetch(`${API_BASE}/tracker/${jobId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, notes }),
+  })
+  if (!res.ok) throw new Error('Failed to update tracker')
+  return res.json()
+}
+
+export async function deleteTrackerJob(jobId: string) {
+  const res = await fetch(`${API_BASE}/tracker/${jobId}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error('Failed to delete tracker job')
+  return res.json()
+}
+
+export async function fetchPreferences(): Promise<Record<string, any>> {
+  const res = await fetch(`${API_BASE}/preferences`)
+  if (!res.ok) throw new Error('Failed to fetch preferences')
+  return res.json()
+}
+
+export async function savePreferences(data: Record<string, any>) {
+  const res = await fetch(`${API_BASE}/preferences`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to save preferences')
+  return res.json()
+}
+
+export async function fetchAtsLinks(): Promise<Record<string, any>> {
+  const res = await fetch(`${API_BASE}/ats-links`)
+  if (!res.ok) throw new Error('Failed to fetch ATS links')
+  return res.json()
+}
+
+export async function addAtsLink(payload: { url?: string; platform?: string; company_slug?: string }) {
+  const res = await fetch(`${API_BASE}/ats-links`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed to add ATS link' }))
+    throw new Error(err.detail || 'Failed to add ATS link')
+  }
+  return res.json()
+}
+
+export async function deleteAtsLink(platform: string, company_slug: string) {
+  const res = await fetch(`${API_BASE}/ats-links/${platform}/${company_slug}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) throw new Error('Failed to delete ATS link')
+  return res.json()
+}
