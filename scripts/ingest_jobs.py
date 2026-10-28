@@ -129,23 +129,25 @@ async def run_ingestion(args):
 
     aggregator = ATSAggregator()
     jobs, stats = await aggregator.fetch_all(prefs)
+    # Use all matching jobs from the ATS scan so MongoDB Atlas can store and deduplicate them
+    all_jobs = stats.get("matching_jobs", []) or jobs
 
     # Filter by requested platforms if specified
     if args.ats and args.ats.lower() != "all":
-        jobs = [j for j in jobs if j.ats_source.lower() in selected_platforms]
+        all_jobs = [j for j in all_jobs if j.ats_source.lower() in selected_platforms]
 
-    print(f"\n✓ Fetched {len(jobs)} total jobs from ATS sources:")
+    print(f"\n✓ Fetched {len(all_jobs)} total matching jobs from ATS sources:")
     for p in selected_platforms:
-        p_count = sum(1 for j in jobs if j.ats_source.lower() == p.lower())
+        p_count = sum(1 for j in all_jobs if j.ats_source.lower() == p.lower())
         print(f"  • {p.upper():<12}: {p_count} listings")
 
-    if not jobs:
+    if not all_jobs:
         print("\nNo jobs were returned matching your criteria. Exiting.")
         return
 
     # 3. Normalize into Custom NoSQL Document Schema
-    print(f"\nNormalizing {len(jobs)} listings into custom document format...")
-    normalized_docs = [normalize_job_for_db(job) for job in jobs]
+    print(f"\nNormalizing {len(all_jobs)} listings into custom document format...")
+    normalized_docs = [normalize_job_for_db(job) for job in all_jobs]
 
     # Show sample preview
     sample = normalized_docs[0]
@@ -183,3 +185,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

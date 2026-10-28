@@ -27,3 +27,4 @@ __all__ = [
     "fetch_paginated_jobs_sync",
     "normalize_job_for_db",
 ]
+

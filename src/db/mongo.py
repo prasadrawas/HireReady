@@ -258,3 +258,4 @@ def fetch_paginated_jobs_sync(
             d["id"] = d["_id"]
 
     return docs, total_count
+

@@ -185,7 +185,7 @@ async def test_generic_greenhouse_client(sample_greenhouse_response):
         mock_resp.json = lambda: sample_greenhouse_response
         mock_get.return_value = mock_resp
 
-        jobs = await client.fetch_jobs("gitlab", "GitLab")
+        jobs = await client.fetch_jobs("gitlab", "GitLab", force_refresh=True)
         assert len(jobs) == 1
         job = jobs[0]
         assert job.ats_source == "greenhouse"
@@ -210,7 +210,7 @@ async def test_generic_ashby_client(sample_ashby_response):
         mock_resp.json = lambda: sample_ashby_response
         mock_get.return_value = mock_resp
 
-        jobs = await client.fetch_jobs("ramp", "Ramp")
+        jobs = await client.fetch_jobs("ramp", "Ramp", force_refresh=True)
         assert len(jobs) == 1
         job = jobs[0]
         assert job.ats_source == "ashby"
@@ -535,7 +535,7 @@ async def test_rippling_client_with_detail():
         return resp
 
     with patch.object(client.client, "get", side_effect=mock_get):
-        jobs = await client.fetch_jobs("rippling", "Rippling")
+        jobs = await client.fetch_jobs("rippling", "Rippling", force_refresh=True)
 
     assert len(jobs) == 1
     job = jobs[0]

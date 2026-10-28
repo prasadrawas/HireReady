@@ -119,3 +119,4 @@ def test_job_query_service_fallback_when_mongo_empty(tmp_path, monkeypatch):
     assert "jobs" in res
     assert "total" in res
     assert res["source"] == "local_json"
+
