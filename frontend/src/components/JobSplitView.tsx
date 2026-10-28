@@ -19,6 +19,9 @@ import {
   ShieldCheck,
   Briefcase,
   Share2,
+  MoreHorizontal,
+  Clock,
+  Compass,
 } from 'lucide-react'
 import { JobListing, JobOutput } from '../types'
 
@@ -89,7 +92,7 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
   }
 
   const parseAndFormatJD = (rawHtml?: string, rawText?: string): string => {
-    if (!rawHtml && !rawText) return '<p class="text-slate-400">No description provided.</p>'
+    if (!rawHtml && !rawText) return '<p class="text-slate-500">No description provided.</p>'
 
     let str = rawHtml || rawText || ''
 
@@ -104,7 +107,7 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
       }
     }
 
-    // Strip inline font-family, font-size, and background styles from ATS boards
+    // Strip inline font-family, font-size, and background styles from external ATS boards
     str = str.replace(/style="[^"]*"/gi, '')
     str = str.replace(/style='[^']*'/gi, '')
 
@@ -114,13 +117,13 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
   // Company avatar fallback color generator
   const getAvatarColor = (name: string) => {
     const colors = [
-      'bg-blue-600',
-      'bg-indigo-600',
-      'bg-purple-600',
-      'bg-emerald-600',
-      'bg-amber-600',
-      'bg-rose-600',
-      'bg-teal-600',
+      'bg-[#0a66c2]',
+      'bg-[#057642]',
+      'bg-[#7c3aed]',
+      'bg-[#b45309]',
+      'bg-[#be185d]',
+      'bg-[#0f766e]',
+      'bg-[#4338ca]',
     ]
     let hash = 0
     for (let i = 0; i < name.length; i++) {
@@ -130,52 +133,61 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden bg-[#f4f2ee]">
       {/* =========================================================================
-          TOP FILTER BAR (LinkedIn style)
+          TOP FILTER BAR (Exact LinkedIn style)
          ========================================================================= */}
-      <div className="bg-slate-900/90 border-b border-slate-800 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
         <div className="flex flex-wrap items-center gap-2 flex-1">
-          {/* Search Input */}
-          <div className="relative min-w-[240px] max-w-xs">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          {/* Search Input with LinkedIn Pill Style */}
+          <div className="relative min-w-[220px] max-w-xs">
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search title, company, skill..."
-              className="w-full bg-slate-950/80 border border-slate-700/80 rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+              placeholder="Search by title, skill, or company"
+              className="w-full bg-[#edf3f8] hover:bg-[#e4ebf2] focus:bg-white border border-transparent focus:border-[#0a66c2] rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-900 placeholder-slate-500 focus:outline-none transition-all"
             />
           </div>
 
-          {/* Filter Pills */}
+          {/* Active Filter Pill (LinkedIn Green) */}
+          <button
+            onClick={() => {}}
+            className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#01754f] text-white transition-all cursor-pointer shadow-xs"
+          >
+            Jobs ▾
+          </button>
+
+          {/* Remote Filter Pill */}
           <button
             onClick={() => setRemoteOnly(!remoteOnly)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
               remoteOnly
-                ? 'bg-blue-600 text-white border-blue-500 shadow-sm shadow-blue-500/20'
-                : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700'
+                ? 'bg-[#01754f] text-white border-transparent'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
             }`}
           >
             Remote {remoteOnly && '✓'}
           </button>
 
+          {/* Tailored Only Filter Pill */}
           <button
             onClick={() => setTailoredOnly(!tailoredOnly)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
               tailoredOnly
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm shadow-emerald-500/20'
-                : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700'
+                ? 'bg-[#01754f] text-white border-transparent'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
             }`}
           >
             Tailored Only {tailoredOnly && '✓'}
           </button>
 
-          {/* ATS Source Dropdown */}
+          {/* ATS Source Dropdown Pill */}
           <select
             value={selectedPlatform}
             onChange={(e) => setSelectedPlatform(e.target.value)}
-            className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-full px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+            className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-full px-3.5 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0a66c2] cursor-pointer"
           >
             <option value="all">All ATS Platforms</option>
             {platforms.map((p) => (
@@ -185,13 +197,13 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
             ))}
           </select>
 
-          {/* Match Score Dropdown */}
+          {/* Match Score Dropdown Pill */}
           <select
             value={minScoreFilter}
             onChange={(e) => setMinScoreFilter(parseFloat(e.target.value))}
-            className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-full px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+            className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-full px-3.5 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0a66c2] cursor-pointer"
           >
-            <option value={0}>All Match Scores</option>
+            <option value={0}>Experience / Match: All</option>
             <option value={0.7}>70%+ Strong Match</option>
             <option value={0.5}>50%+ Medium Match</option>
             <option value={0.4}>40%+ Good Match</option>
@@ -206,32 +218,32 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                 setSelectedPlatform('all')
                 setMinScoreFilter(0)
               }}
-              className="text-xs text-blue-400 hover:text-blue-300 font-medium px-2 py-1"
+              className="text-xs text-[#0a66c2] hover:text-[#004182] font-semibold px-2 py-1 cursor-pointer"
             >
               Reset filters
             </button>
           )}
         </div>
 
-        {/* Count Indicator */}
-        <div className="text-xs text-slate-400 font-medium shrink-0">
-          Showing <span className="text-white font-semibold">{filteredJobs.length}</span> of {jobs.length} jobs
+        {/* Results Count (LinkedIn subhead) */}
+        <div className="text-xs text-slate-600 font-medium shrink-0 flex items-center gap-1.5">
+          <span>{filteredJobs.length} results</span>
         </div>
       </div>
 
       {/* =========================================================================
-          SPLIT VIEW CONTENT (Left: List | Right: Details)
+          MAIN SPLIT VIEW (LinkedIn Layout)
          ========================================================================= */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-5 flex gap-5 overflow-hidden">
         {/* -----------------------------------------------------------------------
-            LEFT COLUMN: Scrollable Job Listings (LinkedIn Style)
+            LEFT COLUMN: Scrollable Job Listings
            ----------------------------------------------------------------------- */}
-        <div className="w-full md:w-[420px] lg:w-[460px] xl:w-[490px] border-r border-slate-800 overflow-y-auto bg-slate-950/60 shrink-0 divide-y divide-slate-800/60">
+        <div className="w-full md:w-[380px] lg:w-[410px] xl:w-[430px] bg-white rounded-xl border border-slate-200 overflow-y-auto shrink-0 divide-y divide-slate-100 shadow-xs">
           {filteredJobs.length === 0 ? (
-            <div className="p-8 text-center text-slate-400">
-              <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-40 text-slate-500" />
-              <p className="font-semibold text-white">No jobs match your filters</p>
-              <p className="text-xs mt-1 text-slate-400">Try adjusting your search keywords or ATS filters.</p>
+            <div className="p-10 text-center text-slate-500">
+              <Briefcase className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="font-semibold text-slate-800">No matching jobs</p>
+              <p className="text-xs text-slate-500 mt-1">Try resetting or broadening your filters.</p>
             </div>
           ) : (
             filteredJobs.map((job) => {
@@ -243,61 +255,64 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                 <div
                   key={job.id}
                   onClick={() => onSelectJob(job)}
-                  className={`p-4 transition-all cursor-pointer relative flex gap-3.5 hover:bg-slate-900/80 ${
+                  className={`p-4 transition-all cursor-pointer relative flex gap-3.5 hover:bg-slate-50 ${
                     isSelected
-                      ? 'bg-slate-900/90 border-l-4 border-l-blue-500 pl-3'
+                      ? 'bg-[#edf3f8]/70 border-l-4 border-l-[#0a66c2]'
                       : 'border-l-4 border-l-transparent'
                   }`}
                 >
-                  {/* Company Logo / Avatar */}
+                  {/* Company Logo Square */}
                   <div
-                    className={`w-11 h-11 rounded-xl ${avatarColor} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-md`}
+                    className={`w-12 h-12 rounded-lg ${avatarColor} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs`}
                   >
                     {job.company.substring(0, 2).toUpperCase()}
                   </div>
 
-                  {/* Job Details */}
+                  {/* Job Summary */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4
-                        className={`text-sm font-semibold truncate ${
-                          isSelected ? 'text-blue-400 font-bold' : 'text-white'
-                        }`}
-                      >
-                        {job.title}
-                      </h4>
-                      {job.has_tailored_resume && (
-                        <span
-                          className="shrink-0 p-0.5 rounded-full bg-emerald-500/10 text-emerald-400"
-                          title="Tailored Resume Generated"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
+                    <h4
+                      className={`text-sm font-semibold truncate ${
+                        isSelected ? 'text-[#0a66c2]' : 'text-slate-900 hover:text-[#0a66c2]'
+                      }`}
+                    >
+                      {job.title}
+                    </h4>
+
+                    <p className="text-xs text-slate-700 font-normal mt-0.5">{job.company}</p>
+
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      {job.location || 'Remote'} {job.remote && '(Remote)'}
+                    </p>
+
+                    {job.salary && (
+                      <p className="text-xs text-slate-600 font-medium mt-1 truncate">
+                        {job.salary}
+                      </p>
+                    )}
+
+                    {/* LinkedIn Style Tags & Status */}
+                    <div className="flex items-center gap-2 mt-2 pt-1 border-t border-slate-100 text-[11px]">
+                      {job.has_tailored_resume ? (
+                        <span className="flex items-center gap-1 text-[#057642] font-semibold">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Tailored
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[#057642] font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Actively reviewing
                         </span>
                       )}
-                    </div>
 
-                    <p className="text-xs font-medium text-slate-300 mt-0.5">{job.company}</p>
+                      <span className="text-slate-300">&bull;</span>
 
-                    <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-400">
-                      <span className="truncate max-w-[150px]">{job.location || 'Remote'}</span>
-                      <span>&bull;</span>
-                      <span className="uppercase text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-semibold border border-slate-700">
-                        {job.ats_source}
-                      </span>
-                    </div>
-
-                    {/* Salary & Match Score Row */}
-                    <div className="flex items-center justify-between gap-2 mt-2 pt-1 border-t border-slate-800/40 text-xs">
-                      <span className="text-slate-400 text-[11px] truncate max-w-[180px]">
-                        {job.salary || 'Salary not listed'}
-                      </span>
                       <span
-                        className={`font-semibold text-xs px-2 py-0.5 rounded-full ${
+                        className={`font-semibold px-2 py-0.2 rounded-full ${
                           matchPct >= 70
-                            ? 'bg-emerald-500/15 text-emerald-400'
+                            ? 'bg-emerald-50 text-emerald-700'
                             : matchPct >= 50
-                            ? 'bg-blue-500/15 text-blue-400'
-                            : 'bg-slate-800 text-slate-400'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'bg-slate-100 text-slate-600'
                         }`}
                       >
                         {matchPct}% Match
@@ -311,199 +326,215 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
         </div>
 
         {/* -----------------------------------------------------------------------
-            RIGHT COLUMN: Detailed View of Selected Job (LinkedIn Style)
+            RIGHT COLUMN: LinkedIn-Style Detailed Job View
            ----------------------------------------------------------------------- */}
-        <div className="flex-1 overflow-y-auto bg-slate-950 p-6">
+        <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-y-auto shadow-xs flex flex-col">
           {activeJob ? (
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Top Header Card */}
-              <div className="glass-panel p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+            <div className="p-6 space-y-6">
+              {/* Header section with Company Logo & Actions */}
+              <div>
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3.5">
                     <div
-                      className={`w-14 h-14 rounded-2xl ${getAvatarColor(
+                      className={`w-14 h-14 rounded-lg ${getAvatarColor(
                         activeJob.company
-                      )} flex items-center justify-center text-white font-extrabold text-xl shadow-lg`}
+                      )} flex items-center justify-center text-white font-bold text-lg shadow-xs`}
                     >
                       {activeJob.company.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      <span className="text-sm font-semibold text-slate-700 hover:text-[#0a66c2] cursor-pointer">
+                        {activeJob.company}
+                      </span>
+                      <h2 className="text-2xl font-bold text-slate-900 tracking-tight mt-0.5">
                         {activeJob.title}
                       </h2>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-slate-300">
-                        <span className="font-semibold text-blue-400">{activeJob.company}</span>
-                        <span>&bull;</span>
-                        <span className="text-slate-400">{activeJob.location || 'Remote'}</span>
-                        {activeJob.posted_date && (
-                          <>
-                            <span>&bull;</span>
-                            <span className="text-slate-500 text-xs">Posted {activeJob.posted_date}</span>
-                          </>
-                        )}
-                      </div>
                     </div>
                   </div>
 
-                  {/* Status Tag */}
-                  {activeJob.has_tailored_resume && (
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Tailored & Validated
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1 text-slate-400">
+                    <button className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer text-slate-600">
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* Tags Row */}
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 font-medium">
-                    {activeJob.remote ? 'Remote Work' : 'On-Site / Hybrid'}
+                {/* Metadata Line */}
+                <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-slate-500">
+                  <span className="font-medium text-slate-700">{activeJob.location || 'Remote'}</span>
+                  <span>&bull;</span>
+                  {activeJob.posted_date && (
+                    <>
+                      <span>Posted {activeJob.posted_date}</span>
+                      <span>&bull;</span>
+                    </>
+                  )}
+                  <span>Responses managed via {activeJob.ats_source.toUpperCase()}</span>
+                </div>
+
+                {/* Badges / Attributes */}
+                <div className="flex flex-wrap items-center gap-2 mt-3 text-xs">
+                  <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                    {activeJob.remote ? '✓ Remote' : '✓ On-site / Hybrid'}
                   </span>
-                  <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 font-medium">
-                    {activeJob.ats_source.toUpperCase()} Board
+                  <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                    Full-time
                   </span>
                   {activeJob.salary && (
-                    <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold flex items-center gap-1">
-                      <DollarSign className="w-3 h-3" />
-                      {activeJob.salary}
+                    <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200">
+                      💰 {activeJob.salary}
                     </span>
                   )}
-                  {activeJob.red_flag_count && activeJob.red_flag_count > 0 ? (
-                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" />
-                      {activeJob.red_flag_count} Red Flag Warnings
-                    </span>
-                  ) : null}
                 </div>
 
-                {/* Primary Action Buttons */}
-                <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800/80">
-                  {/* Apply Job Link */}
+                {/* Primary Button Row (Apply & Save) */}
+                <div className="flex flex-wrap items-center gap-2.5 mt-4 pt-2">
+                  {/* LinkedIn Blue Apply Button */}
                   <a
                     href={activeJob.application_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
+                    className="px-6 py-2.5 rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white text-sm font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                   >
-                    <span>Apply on ATS</span>
-                    <ExternalLink className="w-4 h-4" />
+                    <span>Apply</span>
+                    <ExternalLink className="w-4 h-4 ml-0.5" />
                   </a>
+
+                  {/* Save to Pipeline Button */}
+                  <button
+                    onClick={() => onTrack(activeJob, activeJob.tracker_status === 'saved' ? 'applied' : 'saved')}
+                    className="px-5 py-2 rounded-full border border-[#0a66c2] text-[#0a66c2] hover:bg-blue-50 text-sm font-bold transition-all cursor-pointer"
+                  >
+                    {activeJob.tracker_status ? `Stage: ${activeJob.tracker_status}` : 'Save'}
+                  </button>
 
                   {/* Tailor Resume Button */}
                   <button
                     onClick={() => onTailor(activeJob, false)}
                     disabled={isTailoring && activeJobIdTailoring === activeJob.id}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold flex items-center gap-2 shadow-lg shadow-purple-600/25 transition-all disabled:opacity-50"
+                    className="px-4 py-2 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isTailoring && activeJobIdTailoring === activeJob.id ? (
-                      <span className="animate-spin text-sm">⟳</span>
+                      <span className="animate-spin text-xs">⟳</span>
                     ) : (
-                      <Sparkles className="w-4 h-4 text-purple-200" />
+                      <Sparkles className="w-3.5 h-3.5" />
                     )}
-                    <span>{activeJob.has_tailored_resume ? 'Re-Tailor Resume' : 'Tailor Resume'}</span>
+                    <span>{activeJob.has_tailored_resume ? 'Re-Tailor' : 'Tailor Resume'}</span>
                   </button>
 
                   {/* Create Cover Letter Button */}
                   <button
                     onClick={() => onTailor(activeJob, true)}
                     disabled={isTailoring && activeJobIdTailoring === activeJob.id}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold flex items-center gap-2 border border-slate-700 transition-all"
+                    className="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                   >
-                    <FileText className="w-4 h-4 text-slate-400" />
-                    <span>Create Cover Letter</span>
+                    <FileText className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Cover Letter</span>
                   </button>
-
-                  {/* Pipeline Stage Dropdown */}
-                  <div className="flex items-center gap-2 ml-auto">
-                    <span className="text-xs text-slate-400 font-medium">Stage:</span>
-                    <select
-                      value={activeJob.tracker_status || 'saved'}
-                      onChange={(e) => onTrack(activeJob, e.target.value)}
-                      className="bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-lg px-3 py-2 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                    >
-                      <option value="saved">Saved</option>
-                      <option value="applied">Applied</option>
-                      <option value="interviewing">Interviewing</option>
-                      <option value="offer">Offer</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 
-              {/* Match Insight Card (LinkedIn Premium Style) */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-blue-950/40 border border-blue-500/20 shadow-lg space-y-3">
+              {/* LinkedIn Premium Style Match Box (Exact Replica) */}
+              <div className="bg-[#fffbf2] border border-[#f5dfb8] rounded-xl p-4 sm:p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                      HireReady Match Intelligence
+                    <span className="w-3.5 h-3.5 rounded-xs bg-[#c37d16] flex items-center justify-center text-[10px] text-white font-bold">
+                      in
+                    </span>
+                    <span className="text-xs font-bold text-[#b27800] uppercase tracking-wider">
+                      Premium Match Intelligence
                     </span>
                   </div>
-                  <span className="text-xs font-extrabold text-blue-400">
-                    {Math.round((activeJob.score || 0.5) * 100)}% Overall Fit
+
+                  <span className="text-xs font-bold text-slate-700">
+                    Match Confidence: <span className="text-[#0a66c2]">{Math.round((activeJob.score || 0.5) * 100)}%</span>
                   </span>
                 </div>
 
-                <div className="space-y-1.5">
-                  <h4 className="text-base font-bold text-white">
+                <div>
+                  <h4 className="text-base font-bold text-slate-900">
                     Job match is{' '}
-                    <span className="text-blue-400">
+                    <span className="text-[#0a66c2]">
                       {Math.round((activeJob.score || 0.5) * 100) >= 70
-                        ? 'Strong'
+                        ? 'high'
                         : Math.round((activeJob.score || 0.5) * 100) >= 50
-                        ? 'Good'
-                        : 'Moderate'}
+                        ? 'medium'
+                        : 'moderate'}
                     </span>
-                    , review match insights
+                    , review match details
                   </h4>
-                  {activeJob.role_fit && (
-                    <p className="text-xs text-slate-300 leading-relaxed italic bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                      "{activeJob.role_fit}"
-                    </p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Your profile and resume match several of the key requirements for this position.
+                  </p>
+                </div>
+
+                {activeJob.role_fit && (
+                  <div className="bg-white/80 p-3 rounded-lg border border-[#f5dfb8] text-xs text-slate-700 italic">
+                    "{activeJob.role_fit}"
+                  </div>
+                )}
+
+                {/* Sub Action Pills inside Premium Box */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    onClick={() => setActiveTab('validation')}
+                    className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#c37d16]" />
+                    <span>Show match details</span>
+                  </button>
+
+                  <button
+                    onClick={() => onTailor(activeJob, false)}
+                    className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#c37d16]" />
+                    <span>Tailor my resume</span>
+                  </button>
+
+                  {activeJob.key_gaps && activeJob.key_gaps.length > 0 && (
+                    <span className="text-xs text-slate-500 font-medium ml-1">
+                      {activeJob.key_gaps.length} skill gaps detected
+                    </span>
                   )}
                 </div>
 
-                {/* Key Gaps / Missing Keywords */}
+                {/* Missing Keywords Pills */}
                 {activeJob.key_gaps && activeJob.key_gaps.length > 0 && (
-                  <div className="pt-2">
-                    <span className="text-xs font-semibold text-slate-400 block mb-1.5">
-                      Missing Qualifications / Recommended Keywords:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {activeJob.key_gaps.map((gap, i) => (
-                        <span
-                          key={i}
-                          className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium"
-                        >
-                          {gap}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="pt-2 border-t border-[#f5dfb8]/60 flex flex-wrap gap-1.5">
+                    {activeJob.key_gaps.map((gap, i) => (
+                      <span
+                        key={i}
+                        className="text-[11px] bg-amber-100/60 text-amber-900 border border-amber-300/60 px-2 py-0.5 rounded-full font-medium"
+                      >
+                        + {gap}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Details & Tailored Assets Tab Bar */}
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+              {/* Subtabs Bar */}
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
                 <button
                   onClick={() => setActiveTab('jd')}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
                     activeTab === 'jd'
-                      ? 'bg-slate-800 text-white'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-slate-100 text-slate-900 border-b-2 border-b-slate-900'
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
-                  About the Job (JD)
+                  About the job
                 </button>
 
                 {activeJob.has_tailored_resume && (
                   <>
                     <button
                       onClick={() => setActiveTab('resume')}
-                      className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
+                      className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
                         activeTab === 'resume'
-                          ? 'bg-slate-800 text-emerald-400'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-slate-100 text-[#057642] border-b-2 border-b-[#057642]'
+                          : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Tailored Resume (PDF)
@@ -511,10 +542,10 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
 
                     <button
                       onClick={() => setActiveTab('cover_letter')}
-                      className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
+                      className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
                         activeTab === 'cover_letter'
-                          ? 'bg-slate-800 text-purple-400'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-slate-100 text-purple-700 border-b-2 border-b-purple-700'
+                          : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" /> Cover Letter
@@ -522,10 +553,10 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
 
                     <button
                       onClick={() => setActiveTab('validation')}
-                      className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
+                      className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
                         activeTab === 'validation'
-                          ? 'bg-slate-800 text-blue-400'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-slate-100 text-[#0a66c2] border-b-2 border-b-[#0a66c2]'
+                          : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
                       <ShieldCheck className="w-3.5 h-3.5" /> ATS Match Report
@@ -537,52 +568,34 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
               {/* TAB CONTENT: JD */}
               {activeTab === 'jd' && (
                 <div className="space-y-4">
-                  {/* Red flags alert */}
-                  {activeJob.red_flags && activeJob.red_flags.length > 0 && (
-                    <div className="p-4 rounded-xl bg-amber-950/20 border border-amber-900/40 space-y-1.5">
-                      <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4" /> Detected Warning Signals
-                      </span>
-                      <ul className="list-disc list-inside text-xs text-amber-200/90 space-y-1">
-                        {activeJob.red_flags.map((flag, idx) => (
-                          <li key={idx}>{flag}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="glass-panel p-6 rounded-2xl border border-slate-800">
-                    <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
-                      About the Role
-                    </h3>
-                    <div
-                      className="jd-content"
-                      dangerouslySetInnerHTML={{
-                        __html: parseAndFormatJD(
-                          activeJob.description_html,
-                          activeJob.description_text
-                        ),
-                      }}
-                    />
-                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">About the job</h3>
+                  <div
+                    className="jd-content"
+                    dangerouslySetInnerHTML={{
+                      __html: parseAndFormatJD(
+                        activeJob.description_html,
+                        activeJob.description_text
+                      ),
+                    }}
+                  />
                 </div>
               )}
 
               {/* TAB CONTENT: TAILORED RESUME */}
               {activeTab === 'resume' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between glass-panel p-4 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
                     <div>
-                      <h4 className="text-sm font-bold text-white">Targeted Resume Compiled</h4>
-                      <p className="text-xs text-slate-400">
-                        Tailored specifically to highlight relevant achievements for this JD.
+                      <h4 className="text-sm font-bold text-slate-900">Custom Targeted Resume</h4>
+                      <p className="text-xs text-slate-500">
+                        Optimized for {activeJob.company}'s ATS keyword filter with verified page fit.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <a
                         href={`/api/jobs/${activeJob.id}/pdf`}
                         download={`Resume_${activeJob.company}_${activeJob.title}.pdf`}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all"
+                        className="px-4 py-2 rounded-full bg-[#057642] hover:bg-[#046237] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5" /> Download PDF
                       </a>
@@ -590,7 +603,7 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                         href={`/api/jobs/${activeJob.id}/html`}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700"
+                        className="px-4 py-2 rounded-full border border-slate-300 hover:bg-white text-slate-700 text-xs font-semibold cursor-pointer"
                       >
                         Open HTML
                       </a>
@@ -598,7 +611,7 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                   </div>
 
                   {/* Embedded PDF iframe */}
-                  <div className="w-full h-[650px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl">
+                  <div className="w-full h-[650px] rounded-xl overflow-hidden border border-slate-200 bg-white shadow-xs">
                     <iframe
                       src={`/api/jobs/${activeJob.id}/pdf`}
                       className="w-full h-full"
@@ -611,17 +624,17 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
               {/* TAB CONTENT: COVER LETTER */}
               {activeTab === 'cover_letter' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between glass-panel p-4 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
                     <div>
-                      <h4 className="text-sm font-bold text-white">Custom Tailored Cover Letter</h4>
-                      <p className="text-xs text-slate-400">
-                        Personalized addressing {activeJob.company}'s specific challenges and values.
+                      <h4 className="text-sm font-bold text-slate-900">Custom Cover Letter</h4>
+                      <p className="text-xs text-slate-500">
+                        Tailored addressing {activeJob.company}'s specific challenges and team mission.
                       </p>
                     </div>
                     {tailoredOutput?.cover_letter && (
                       <button
                         onClick={() => handleCopyCoverLetter(tailoredOutput.cover_letter!)}
-                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all"
+                        className="px-4 py-2 rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                       >
                         {copiedCoverLetter ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{copiedCoverLetter ? 'Copied!' : 'Copy to Clipboard'}</span>
@@ -629,14 +642,14 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                     )}
                   </div>
 
-                  <div className="glass-panel p-6 rounded-2xl border border-slate-800 whitespace-pre-line font-serif text-sm text-slate-200 leading-relaxed bg-slate-900/60 shadow-lg">
+                  <div className="p-6 rounded-xl border border-slate-200 whitespace-pre-line text-sm text-slate-800 leading-relaxed font-serif bg-white shadow-xs">
                     {tailoredOutput?.cover_letter || (
-                      <div className="text-center py-12 text-slate-400">
+                      <div className="text-center py-10 text-slate-400">
                         <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p>No cover letter generated yet.</p>
                         <button
                           onClick={() => onTailor(activeJob, true)}
-                          className="mt-3 px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium"
+                          className="mt-3 px-4 py-1.5 rounded-full bg-[#0a66c2] text-white text-xs font-semibold cursor-pointer"
                         >
                           Generate Cover Letter
                         </button>
@@ -646,23 +659,23 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                 </div>
               )}
 
-              {/* TAB CONTENT: ATS VALIDATION REPORT */}
+              {/* TAB CONTENT: ATS MATCH REPORT */}
               {activeTab === 'validation' && (
                 <div className="space-y-4">
-                  <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" /> Automated ATS Inspection
+                  <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-3">
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#057642]" /> Automated ATS Inspection
                     </h4>
                     {tailoredOutput?.validation_report ? (
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-slate-300">
+                          <span className="text-xs font-semibold text-slate-700">
                             Status:{' '}
                             <span
                               className={
                                 tailoredOutput.validation_report.passed
-                                  ? 'text-emerald-400'
-                                  : 'text-amber-400'
+                                  ? 'text-[#057642] font-bold'
+                                  : 'text-amber-700 font-bold'
                               }
                             >
                               {tailoredOutput.validation_report.passed
@@ -675,31 +688,31 @@ export const JobSplitView: React.FC<JobSplitViewProps> = ({
                           {tailoredOutput.validation_report.checks?.map((chk: any, idx: number) => (
                             <div
                               key={idx}
-                              className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center gap-2"
+                              className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center gap-2.5"
                             >
                               {chk.passed ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                <CheckCircle2 className="w-4 h-4 text-[#057642] shrink-0" />
                               ) : (
-                                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                               )}
-                              <span className="text-slate-300">{chk.name}</span>
+                              <span className="text-slate-800 font-medium">{chk.name}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-400">Validation report not yet generated.</p>
+                      <p className="text-xs text-slate-500">Validation report not yet generated.</p>
                     )}
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-slate-500">
-              <Briefcase className="w-12 h-12 mb-3 opacity-30 text-slate-400" />
-              <p className="font-semibold text-slate-300">Select a job from the left panel</p>
-              <p className="text-xs text-slate-500 mt-1">
-                View role fit score, compensation, full job description, and tailor your resume.
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8">
+              <Briefcase className="w-12 h-12 mb-3 opacity-30 text-slate-300" />
+              <p className="font-semibold text-slate-700 text-sm">Select a job from the list</p>
+              <p className="text-xs text-slate-400 mt-1">
+                View role fit, compensation details, and tailor your application.
               </p>
             </div>
           )}

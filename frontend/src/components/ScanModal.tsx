@@ -89,22 +89,24 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onScanFin
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="glass-panel w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="p-2.5 rounded-xl bg-[#edf3f8] text-[#0a66c2]">
               <Terminal className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-base">Autonomous ATS Job Scanner</h3>
-              <p className="text-xs text-slate-400">Lever, Greenhouse, Ashby, Workable, SmartRecruiters & more</p>
+              <h3 className="font-bold text-slate-900 text-base">Autonomous ATS Job Scanner</h3>
+              <p className="text-xs text-slate-500">
+                Scraping Lever, Greenhouse, Ashby, Workable, SmartRecruiters & direct career boards
+              </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
+            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -112,14 +114,14 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onScanFin
 
         {/* Platform Stat Badges */}
         {Object.keys(platformStats).length > 0 && (
-          <div className="px-6 py-3 bg-slate-900/40 border-b border-slate-800/60 flex flex-wrap gap-2">
+          <div className="px-6 py-3 bg-[#f8fafc] border-b border-slate-200 flex flex-wrap gap-2">
             {Object.entries(platformStats).map(([plat, count]) => (
               <div
                 key={plat}
-                className="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700 text-xs flex items-center gap-1.5"
+                className="px-3 py-1 rounded-full bg-white border border-slate-200 text-xs flex items-center gap-1.5 shadow-2xs"
               >
-                <span className="capitalize text-slate-300 font-medium">{plat}:</span>
-                <span className="text-blue-400 font-semibold">{count}</span>
+                <span className="capitalize text-slate-600 font-medium">{plat}:</span>
+                <span className="text-[#0a66c2] font-bold">{count}</span>
               </div>
             ))}
           </div>
@@ -127,62 +129,64 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onScanFin
 
         {/* Summary Card */}
         {summary && (
-          <div className="px-6 py-3 bg-blue-950/20 border-b border-blue-900/40 flex items-center justify-between text-xs">
-            <div className="text-slate-300">
-              Total: <span className="text-white font-semibold">{summary.total?.toLocaleString()}</span> listings
+          <div className="px-6 py-2.5 bg-[#edf3f8] border-b border-[#d0e2f5] flex items-center justify-between text-xs">
+            <div className="text-slate-700 font-medium">
+              Total fetched: <span className="text-slate-900 font-bold">{summary.total?.toLocaleString()}</span>
             </div>
-            <div className="text-emerald-400 font-medium">
-              Matched Preferences: <span className="font-bold">{summary.matched?.toLocaleString()}</span>
+            <div className="text-[#057642] font-bold">
+              Matched: <span>{summary.matched?.toLocaleString()}</span>
             </div>
-            <div className="text-indigo-400 font-medium">
-              New: <span className="font-bold">{summary.newCount}</span>
+            <div className="text-[#0a66c2] font-bold">
+              New listings: <span>{summary.newCount}</span>
             </div>
           </div>
         )}
 
-        {/* Live Terminal Output */}
-        <div className="flex-1 p-5 overflow-y-auto bg-slate-950/90 font-mono text-xs text-slate-300 space-y-1.5 min-h-[300px] select-text">
-          {logs.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-500 py-12">
-              <Terminal className="w-8 h-8 mb-2 opacity-50" />
-              <p>Click "Start ATS Scan" to begin scanning configured company job boards.</p>
-            </div>
-          ) : (
-            logs.map((log, idx) => {
-              const isError = log.includes('[ERROR]') || log.includes('failed')
-              const isSuccess = log.includes('[SUCCESS]') || log.includes('finished')
-              const isInfo = log.includes('[FETCH]') || log.includes('[SUMMARY]')
-              return (
-                <div
-                  key={idx}
-                  className={`leading-relaxed ${
-                    isError
-                      ? 'text-red-400 font-semibold'
-                      : isSuccess
-                      ? 'text-emerald-400 font-semibold'
-                      : isInfo
-                      ? 'text-blue-300'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {log}
-                </div>
-              )
-            })
-          )}
-          <div ref={logsEndRef} />
+        {/* Live Terminal Output Window */}
+        <div className="p-4 sm:p-5 flex-1 overflow-hidden bg-slate-50 flex flex-col">
+          <div className="flex-1 p-4 overflow-y-auto bg-[#181d23] rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-1.5 min-h-[260px] select-text shadow-inner">
+            {logs.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-12">
+                <Terminal className="w-8 h-8 mb-2 opacity-40 text-slate-400" />
+                <p>Click "Start ATS Scan" to trigger the multi-ATS crawler.</p>
+              </div>
+            ) : (
+              logs.map((log, idx) => {
+                const isError = log.includes('[ERROR]') || log.includes('failed')
+                const isSuccess = log.includes('[SUCCESS]') || log.includes('finished')
+                const isInfo = log.includes('[FETCH]') || log.includes('[SUMMARY]')
+                return (
+                  <div
+                    key={idx}
+                    className={`leading-relaxed ${
+                      isError
+                        ? 'text-rose-400 font-semibold'
+                        : isSuccess
+                        ? 'text-emerald-400 font-semibold'
+                        : isInfo
+                        ? 'text-sky-300'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    {log}
+                  </div>
+                )
+              })
+            )}
+            <div ref={logsEndRef} />
+          </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/80 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
             {isScanning ? (
-              <span className="flex items-center gap-2 text-blue-400">
+              <span className="flex items-center gap-2 text-[#0a66c2] font-medium">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Scanning active boards...
               </span>
             ) : isCompleted ? (
-              <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+              <span className="flex items-center gap-1.5 text-[#057642] font-bold">
                 <CheckCircle2 className="w-4 h-4" />
                 Scan complete! Jobs ranked and ready.
               </span>
@@ -191,11 +195,11 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onScanFin
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {!isScanning && (
               <button
                 onClick={startScan}
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
+                className="px-5 py-2 rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 <span>{logs.length > 0 ? 'Restart Scan' : 'Start ATS Scan'}</span>
@@ -203,7 +207,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onScanFin
             )}
             <button
               onClick={handleClose}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
+              className="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-all cursor-pointer"
             >
               Close
             </button>

@@ -142,7 +142,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#f4f2ee] text-slate-900 flex flex-col selection:bg-[#0a66c2] selection:text-white">
       {/* Toast Notification */}
       {notification && (
         <div

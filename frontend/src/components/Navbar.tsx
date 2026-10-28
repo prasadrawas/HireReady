@@ -17,76 +17,81 @@ export const Navbar: React.FC<NavbarProps> = ({
   totalJobs,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full bg-white border-b border-slate-200 shadow-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <Briefcase className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-[#0a66c2] flex items-center justify-center shadow-xs">
+            <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
-            <span className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
-              Hire<span className="gradient-text">Ready</span>
-            </span>
-            <span className="text-xs text-slate-400 block -mt-1 font-medium">
-              Autonomous ATS Job Scanner & Tailor
+            <span className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1">
+              Hire<span className="text-[#0a66c2]">Ready</span>
             </span>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800/80">
+        {/* Navigation Tabs (LinkedIn Style) */}
+        <nav className="flex items-center h-full gap-1 sm:gap-6">
           <button
             onClick={() => setActiveTab('jobs')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'jobs'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Briefcase className="w-4 h-4" />
-            <span>Jobs</span>
-            {totalJobs > 0 && (
-              <span className="ml-1 text-xs px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300 font-semibold">
-                {totalJobs}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5">
+              <Briefcase className="w-4 h-4" />
+              <span>Jobs</span>
+              {totalJobs > 0 && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 font-bold border border-slate-200">
+                  {totalJobs}
+                </span>
+              )}
+            </div>
           </button>
 
           <button
             onClick={() => setActiveTab('pipeline')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'pipeline'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Layers className="w-4 h-4" />
-            <span>Pipeline</span>
+            <div className="flex items-center gap-1.5">
+              <Layers className="w-4 h-4" />
+              <span>My Jobs / Pipeline</span>
+            </div>
           </button>
 
           <button
             onClick={() => setActiveTab('studio')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'studio'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Tailor Studio</span>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Tailor Studio</span>
+            </div>
           </button>
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex flex-col items-center justify-center h-14 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'settings'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Sliders className="w-4 h-4" />
-            <span>Settings</span>
+            <div className="flex items-center gap-1.5">
+              <Sliders className="w-4 h-4" />
+              <span>Preferences & ATS</span>
+            </div>
           </button>
         </nav>
 
@@ -95,13 +100,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onOpenScan}
             disabled={isScanning}
-            className={`relative group overflow-hidden rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg ${
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-xs cursor-pointer ${
               isScanning
-                ? 'bg-amber-600/80 text-white animate-pulse'
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/25 hover:shadow-blue-500/40'
+                ? 'bg-amber-600 text-white animate-pulse'
+                : 'bg-[#0a66c2] hover:bg-[#004182] text-white'
             }`}
           >
-            <Play className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
+            <Play className={`w-3.5 h-3.5 fill-current ${isScanning ? 'animate-spin' : ''}`} />
             <span>{isScanning ? 'Scanning...' : 'Scan ATS Boards'}</span>
           </button>
         </div>
