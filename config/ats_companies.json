@@ -1,0 +1,179 @@
+{
+  "lever": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "stripe", "name": "Stripe"},
+      {"slug": "spotify", "name": "Spotify"},
+      {"slug": "netflix", "name": "Netflix"},
+      {"slug": "notion", "name": "Notion"},
+      {"slug": "figma", "name": "Figma"},
+      {"slug": "coinbase", "name": "Coinbase"},
+      {"slug": "discord", "name": "Discord"},
+      {"slug": "databricks", "name": "Databricks"},
+      {"slug": "openai", "name": "OpenAI"},
+      {"slug": "anthropic", "name": "Anthropic"},
+      {"slug": "scale", "name": "Scale AI"},
+      {"slug": "anduril", "name": "Anduril"},
+      {"slug": "plaid", "name": "Plaid"},
+      {"slug": "rippling", "name": "Rippling"},
+      {"slug": "navan", "name": "Navan"},
+      {"slug": "airtable", "name": "Airtable"},
+      {"slug": "faire", "name": "Faire"},
+      {"slug": "retool", "name": "Retool"},
+      {"slug": "dbt-labs", "name": "dbt Labs"},
+      {"slug": "loom", "name": "Loom"},
+      {"slug": "netlify", "name": "Netlify"},
+      {"slug": "webflow", "name": "Webflow"},
+      {"slug": "brex", "name": "Brex"},
+      {"slug": "chime", "name": "Chime"},
+      {"slug": "carta", "name": "Carta"},
+      {"slug": "gusto", "name": "Gusto"},
+      {"slug": "benchling", "name": "Benchling"},
+      {"slug": "grammarly", "name": "Grammarly"},
+      {"slug": "reddit", "name": "Reddit"},
+      {"slug": "lyft", "name": "Lyft"}
+    ]
+  },
+  "greenhouse": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "airbnb", "name": "Airbnb"},
+      {"slug": "gitlab", "name": "GitLab"},
+      {"slug": "cloudflare", "name": "Cloudflare"},
+      {"slug": "doordash", "name": "DoorDash"},
+      {"slug": "hubspot", "name": "HubSpot"},
+      {"slug": "hashicorp", "name": "HashiCorp"},
+      {"slug": "twitch", "name": "Twitch"},
+      {"slug": "pinterest", "name": "Pinterest"},
+      {"slug": "squarespace", "name": "Squarespace"},
+      {"slug": "cockroachlabs", "name": "Cockroach Labs"},
+      {"slug": "datadog", "name": "Datadog"},
+      {"slug": "elastic", "name": "Elastic"},
+      {"slug": "confluent", "name": "Confluent"},
+      {"slug": "mongodb", "name": "MongoDB"},
+      {"slug": "snyk", "name": "Snyk"},
+      {"slug": "pagerduty", "name": "PagerDuty"},
+      {"slug": "grafanalabs", "name": "Grafana Labs"},
+      {"slug": "yugabyte", "name": "Yugabyte"},
+      {"slug": "samsara", "name": "Samsara"},
+      {"slug": "coreweave", "name": "CoreWeave"},
+      {"slug": "nerdwallet", "name": "NerdWallet"},
+      {"slug": "duolingo", "name": "Duolingo"},
+      {"slug": "canva", "name": "Canva"},
+      {"slug": "flexport", "name": "Flexport"},
+      {"slug": "dropbox", "name": "Dropbox"},
+      {"slug": "instacart", "name": "Instacart"},
+      {"slug": "robinhood", "name": "Robinhood"},
+      {"slug": "affirm", "name": "Affirm"},
+      {"slug": "toast", "name": "Toast"},
+      {"slug": "wiz", "name": "Wiz"}
+    ]
+  },
+  "ashby": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "ramp", "name": "Ramp"},
+      {"slug": "vercel", "name": "Vercel"},
+      {"slug": "linear", "name": "Linear"},
+      {"slug": "supabase", "name": "Supabase"},
+      {"slug": "mercury", "name": "Mercury"},
+      {"slug": "clerk", "name": "Clerk"},
+      {"slug": "resend", "name": "Resend"},
+      {"slug": "cal", "name": "Cal.com"},
+      {"slug": "stytch", "name": "Stytch"},
+      {"slug": "highlight", "name": "Highlight"},
+      {"slug": "inngest", "name": "Inngest"},
+      {"slug": "drata", "name": "Drata"},
+      {"slug": "replit", "name": "Replit"},
+      {"slug": "temporal", "name": "Temporal"},
+      {"slug": "posthog", "name": "PostHog"}
+    ]
+  },
+  "workable": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "taxfix", "name": "Taxfix"},
+      {"slug": "miro-2", "name": "Miro"},
+      {"slug": "sentry-io", "name": "Sentry"},
+      {"slug": "descript", "name": "Descript"},
+      {"slug": "deel-2", "name": "Deel"},
+      {"slug": "productboard", "name": "Productboard"},
+      {"slug": "factorial-1", "name": "Factorial"},
+      {"slug": "typeform", "name": "Typeform"},
+      {"slug": "komoot", "name": "Komoot"},
+      {"slug": "volocopter", "name": "Volocopter"}
+    ]
+  },
+  "smartrecruiters": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.5,
+    "companies": [
+      {"slug": "Visa", "name": "Visa"},
+      {"slug": "BOSCH", "name": "Bosch"},
+      {"slug": "Spotify", "name": "Spotify"},
+      {"slug": "IKEA", "name": "IKEA"},
+      {"slug": "T-Mobile", "name": "T-Mobile"},
+      {"slug": "McDonald", "name": "McDonald's"},
+      {"slug": "Swatch", "name": "Swatch Group"},
+      {"slug": "Equinix", "name": "Equinix"},
+      {"slug": "Adidas", "name": "Adidas"},
+      {"slug": "Square1", "name": "Square"}
+    ]
+  },
+  "recruitee": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "talkdesk", "name": "Talkdesk"},
+      {"slug": "lottiefiles", "name": "LottieFiles"},
+      {"slug": "usercentrics", "name": "Usercentrics"},
+      {"slug": "packhelp", "name": "Packhelp"},
+      {"slug": "vimcar", "name": "Vimcar"}
+    ]
+  },
+  "pinpoint": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "voiceflow", "name": "Voiceflow"},
+      {"slug": "primer", "name": "Primer"},
+      {"slug": "rewatch", "name": "Rewatch"}
+    ]
+  },
+  "rippling": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.5,
+    "companies": [
+      {"slug": "rippling", "name": "Rippling"},
+      {"slug": "attentive-mobile", "name": "Attentive"}
+    ]
+  },
+  "breezyhr": {
+    "enabled": true,
+    "rate_limit_delay_seconds": 1.0,
+    "companies": [
+      {"slug": "legalshield", "name": "LegalShield"},
+      {"slug": "courierboard", "name": "Courier"}
+    ]
+  },
+  "workday": {
+    "enabled": false,
+    "rate_limit_delay_seconds": 2.0,
+    "companies": [
+      {"slug": "apple", "name": "Apple"},
+      {"slug": "amazon", "name": "Amazon"},
+      {"slug": "meta", "name": "Meta"},
+      {"slug": "salesforce", "name": "Salesforce"},
+      {"slug": "netflix", "name": "Netflix"},
+      {"slug": "jpmorgan", "name": "JPMorgan Chase"},
+      {"slug": "deloitte", "name": "Deloitte"},
+      {"slug": "microsoft", "name": "Microsoft"},
+      {"slug": "adobe", "name": "Adobe"},
+      {"slug": "uber", "name": "Uber"}
+    ]
+  }
+}

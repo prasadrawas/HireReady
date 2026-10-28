@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ contact.name }} — Resume</title>
+  <meta name="description" content="Resume of {{ contact.name }}, tailored for {{ target_role | default('Software Engineer') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text: #111827;
+      --text-secondary: #374151;
+      --text-muted: #6b7280;
+      --accent: #2563eb;
+      --accent-dark: #1e40af;
+      --border: #e5e7eb;
+      --bg: #ffffff;
+      --bg-page: #f8fafc;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.5;
+      color: var(--text);
+      background: var(--bg-page);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .resume-container {
+      max-width: 8.5in;
+      margin: 24px auto;
+      background: var(--bg);
+      padding: 0.5in 0.6in;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 30px rgba(0,0,0,0.06);
+      border-radius: 8px;
+    }
+
+    /* Contact Section */
+    #contact {
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    .candidate-name {
+      font-size: 24pt;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .contact-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      font-size: 9pt;
+      color: var(--text-secondary);
+    }
+
+    .contact-details a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .contact-details a:hover {
+      text-decoration: underline;
+    }
+
+    /* Standard Section */
+    section {
+      margin-top: 16px;
+    }
+
+    .section-title {
+      font-size: 11pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+
+    /* Summary */
+    .summary-text {
+      font-size: 9.5pt;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    /* Skills */
+    .skills-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .skill-row {
+      font-size: 9pt;
+      line-height: 1.5;
+    }
+
+    .skill-category {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .skill-list {
+      color: var(--text-secondary);
+    }
+
+    /* Experience */
+    .job-entry {
+      margin-bottom: 16px;
+      page-break-inside: avoid;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+
+    .job-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .job-dates {
+      font-size: 8.5pt;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .job-company {
+      font-size: 9pt;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    ul.bullet-list {
+      margin-left: 18px;
+    }
+
+    ul.bullet-list li {
+      font-size: 9pt;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      line-height: 1.5;
+      page-break-inside: avoid;
+    }
+
+    ul.bullet-list li strong {
+      color: var(--text);
+    }
+
+    /* Projects */
+    .project-entry {
+      margin-bottom: 12px;
+      page-break-inside: avoid;
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .project-name {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .project-name a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .project-tech {
+      font-size: 8pt;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .project-desc {
+      font-size: 9pt;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Education */
+    .edu-entry {
+      margin-bottom: 8px;
+      page-break-inside: avoid;
+    }
+
+    .edu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .edu-degree {
+      font-size: 10pt;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .edu-dates {
+      font-size: 8.5pt;
+      color: var(--text-muted);
+    }
+
+    .edu-institution {
+      font-size: 9pt;
+      color: var(--text-secondary);
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: white !important;
+        font-size: 8.5pt !important;
+        line-height: 1.4 !important;
+      }
+
+      .resume-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+      }
+
+      @page {
+        size: A4;
+        margin: 10mm 12mm;
+      }
+
+      .candidate-name { font-size: 20pt !important; margin-bottom: 3px !important; }
+      #contact { margin-bottom: 10px !important; padding-bottom: 8px !important; }
+      .contact-details { gap: 3px 12px !important; font-size: 8pt !important; }
+
+      section { margin-top: 10px !important; }
+      .section-title { font-size: 9pt !important; margin-bottom: 5px !important; padding-bottom: 2px !important; border-bottom-color: #cbd5e1 !important; }
+
+      .summary-text { font-size: 8pt !important; line-height: 1.4 !important; }
+
+      .skills-grid { gap: 3px !important; }
+      .skill-row { font-size: 8pt !important; line-height: 1.35 !important; }
+
+      .job-entry { margin-bottom: 8px !important; page-break-inside: avoid !important; }
+      .job-title { font-size: 9.5pt !important; }
+      .job-dates { font-size: 7.5pt !important; }
+      .job-company { font-size: 8pt !important; margin-bottom: 3px !important; }
+      ul.bullet-list { margin-left: 14px !important; }
+      ul.bullet-list li { font-size: 8pt !important; line-height: 1.38 !important; margin-bottom: 3px !important; page-break-inside: avoid !important; }
+
+      .project-entry { margin-bottom: 6px !important; page-break-inside: avoid !important; }
+      .project-name { font-size: 8.5pt !important; }
+      .project-tech { font-size: 7.5pt !important; margin-bottom: 2px !important; }
+      .project-desc { font-size: 8pt !important; line-height: 1.35 !important; }
+
+      .edu-entry { margin-bottom: 4px !important; page-break-inside: avoid !important; }
+      .edu-degree { font-size: 8.5pt !important; }
+      .edu-dates { font-size: 7.5pt !important; }
+      .edu-institution { font-size: 8pt !important; }
+
+      a {
+        text-decoration: none !important;
+        color: var(--text) !important;
+      }
+
+      a[href^="http"]:after, a[href^="mailto"]:after {
+        content: "" !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="resume-container">
+
+  <!-- Contact Information -->
+  <section id="contact">
+    <h1 class="candidate-name">{{ contact.name }}</h1>
+    <div class="contact-details">
+      {% if contact.location %}<span>{{ contact.location }}</span>{% endif %}
+      {% if contact.email %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% endif %}
+      {% if contact.phone and contact.phone != "N/A" %}<span>{{ contact.phone }}</span>{% endif %}
+      {% if contact.linkedin %}<a href="{{ contact.linkedin }}">LinkedIn</a>{% endif %}
+      {% if contact.github %}<a href="{{ contact.github }}">GitHub</a>{% endif %}
+      {% if contact.website %}<a href="{{ contact.website }}">{{ contact.website | replace('https://', '') | replace('http://', '') }}</a>{% endif %}
+    </div>
+  </section>
+
+  <!-- Professional Summary -->
+  {% if summary %}
+  <section id="summary">
+    <h2 class="section-title">Professional Summary</h2>
+    <p class="summary-text">{{ summary }}</p>
+  </section>
+  {% endif %}
+
+  <!-- Technical Skills -->
+  {% if skills %}
+  <section id="skills">
+    <h2 class="section-title">Technical Skills</h2>
+    <div class="skills-grid">
+      {% for group in skills %}
+      <div class="skill-row">
+        <span class="skill-category">{{ group.category }}:</span>
+        <span class="skill-list">{{ group.skills | join(', ') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Professional Experience -->
+  {% if experience %}
+  <section id="experience">
+    <h2 class="section-title">Professional Experience</h2>
+    {% for job in experience %}
+    <div class="job-entry">
+      <div class="job-header">
+        <h3 class="job-title">{{ job.title }}</h3>
+        <span class="job-dates">{{ job.start_date }}{% if job.end_date %} – {{ job.end_date }}{% endif %}</span>
+      </div>
+      <div class="job-company">{{ job.company }}{% if job.location %} &bull; {{ job.location }}{% endif %}</div>
+      {% if job.bullets %}
+      <ul class="bullet-list">
+        {% for bullet in job.bullets %}
+        <li data-source-id="{{ bullet.source_id | default(bullet.id) }}">{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <!-- Key Projects -->
+  {% if projects %}
+  <section id="projects">
+    <h2 class="section-title">Key Projects</h2>
+    {% for proj in projects %}
+    <div class="project-entry">
+      <div class="project-header">
+        <h3 class="project-name">
+          {% if proj.url %}<a href="{{ proj.url }}">{{ proj.name }}</a>{% else %}{{ proj.name }}{% endif %}
+        </h3>
+      </div>
+      {% if proj.technologies %}
+      <div class="project-tech">{{ proj.technologies | join(' &bull; ') }}</div>
+      {% endif %}
+      {% if proj.bullets %}
+      <ul class="bullet-list">
+        {% for bullet in proj.bullets %}
+        <li data-source-id="{{ bullet.source_id | default(bullet.id) }}">{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+      {% elif proj.description %}
+      <p class="project-desc">{{ proj.description }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <!-- Education -->
+  {% if education %}
+  <section id="education">
+    <h2 class="section-title">Education</h2>
+    {% for edu in education %}
+    <div class="edu-entry">
+      <div class="edu-header">
+        <h3 class="edu-degree">{{ edu.degree }}</h3>
+        <span class="edu-dates">{{ edu.start_date }}{% if edu.end_date %} – {{ edu.end_date }}{% endif %}</span>
+      </div>
+      <div class="edu-institution">{{ edu.institution }}{% if edu.field %} &bull; {{ edu.field }}{% endif %}</div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <!-- Certifications -->
+  {% if certifications %}
+  <section id="certifications">
+    <h2 class="section-title">Certifications</h2>
+    <ul class="bullet-list">
+      {% for cert in certifications %}
+      <li>{{ cert }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+</div>
+
+</body>
+</html>

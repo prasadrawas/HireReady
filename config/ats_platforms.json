@@ -1,0 +1,233 @@
+{
+  "lever": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://api.lever.co/v0/postings/{slug}?mode=json",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$",
+      "id_field": "id",
+      "title_field": "text",
+      "description_html_field": "description",
+      "description_text_field": "descriptionPlain",
+      "location_field": "categories.location",
+      "department_field": ["categories.department", "categories.team"],
+      "remote_field": null,
+      "posted_date_field": "createdAt",
+      "date_format": "epoch_ms",
+      "application_url_field": "applyUrl",
+      "application_url_fallback": "https://jobs.lever.co/{slug}/{id}/apply",
+      "extra_description_field": "additional"
+    }
+  },
+  "greenhouse": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.jobs",
+      "id_field": "id",
+      "title_field": "title",
+      "description_html_field": "content",
+      "description_text_field": null,
+      "location_field": "location.name",
+      "department_field": "departments[0].name",
+      "remote_field": null,
+      "posted_date_field": "updated_at",
+      "date_format": "iso",
+      "application_url_field": "absolute_url",
+      "application_url_fallback": "https://boards.greenhouse.io/{slug}/jobs/{id}",
+      "extra_description_field": null
+    }
+  },
+  "ashby": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.jobs",
+      "listings_path_fallback": ["$.postings", "$"],
+      "id_field": "id",
+      "title_field": "title",
+      "description_html_field": "descriptionHtml",
+      "description_text_field": "descriptionPlain",
+      "location_field": ["locationName", "location"],
+      "department_field": ["departmentName", "department"],
+      "remote_field": "isRemote",
+      "posted_date_field": ["publishedAt", "updatedAt"],
+      "date_format": "iso",
+      "application_url_field": ["applyUrl", "applicationUrl", "jobUrl"],
+      "application_url_fallback": "https://jobs.ashbyhq.com/{slug}/{id}/application",
+      "extra_description_field": null
+    }
+  },
+  "workable": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.jobs",
+      "id_field": "shortcode",
+      "title_field": "title",
+      "description_html_field": "description",
+      "description_text_field": null,
+      "location_field": "location",
+      "department_field": "department",
+      "remote_field": null,
+      "posted_date_field": "published_on",
+      "date_format": "iso",
+      "application_url_field": "url",
+      "application_url_fallback": "https://apply.workable.com/{slug}/j/{id}",
+      "extra_description_field": null
+    }
+  },
+  "smartrecruiters": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.content",
+      "id_field": "id",
+      "title_field": "name",
+      "description_html_field": null,
+      "description_text_field": null,
+      "location_field": "location.city",
+      "department_field": "department.label",
+      "remote_field": "location.remote",
+      "posted_date_field": "releasedDate",
+      "date_format": "iso",
+      "application_url_field": null,
+      "application_url_fallback": "https://jobs.smartrecruiters.com/{slug}/{id}",
+      "extra_description_field": null
+    }
+  },
+  "recruitee": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://{slug}.recruitee.com/api/offers",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.offers",
+      "id_field": "id",
+      "title_field": "title",
+      "description_html_field": "description",
+      "description_text_field": null,
+      "location_field": "location",
+      "department_field": "department",
+      "remote_field": "remote",
+      "posted_date_field": "published_at",
+      "date_format": "iso",
+      "application_url_field": "careers_apply_url",
+      "application_url_fallback": "https://{slug}.recruitee.com/o/{id}",
+      "extra_description_field": null
+    }
+  },
+  "pinpoint": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://{slug}.pinpointhq.com/postings.json",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.data",
+      "id_field": "id",
+      "title_field": "title",
+      "description_html_field": "description",
+      "description_text_field": null,
+      "location_field": "location.name",
+      "department_field": "job.department.name",
+      "remote_field": null,
+      "posted_date_field": null,
+      "date_format": "iso",
+      "application_url_field": "url",
+      "application_url_fallback": "https://{slug}.pinpointhq.com/postings/{id}",
+      "extra_description_field": null
+    }
+  },
+  "rippling": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://api.rippling.com/platform/api/ats/v2/board/{slug}/jobs?page=0&pageSize=1000",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$.items",
+      "id_field": "id",
+      "title_field": "name",
+      "description_html_field": null,
+      "description_text_field": null,
+      "location_field": "locations[0].name",
+      "department_field": "department.name",
+      "remote_field": null,
+      "posted_date_field": null,
+      "date_format": "iso",
+      "application_url_field": "url",
+      "application_url_fallback": "https://www.rippling.com/careers/{slug}/{id}",
+      "extra_description_field": null
+    }
+  },
+  "breezyhr": {
+    "request": {
+      "method": "GET",
+      "url_template": "https://{slug}.breezy.hr/json",
+      "headers": {},
+      "body": null
+    },
+    "response": {
+      "listings_path": "$",
+      "id_field": "id",
+      "title_field": "name",
+      "description_html_field": null,
+      "description_text_field": null,
+      "location_field": "location.city",
+      "department_field": "department",
+      "remote_field": "location.is_remote",
+      "posted_date_field": "published_date",
+      "date_format": "iso",
+      "application_url_field": "url",
+      "application_url_fallback": "https://{slug}.breezy.hr/p/{id}",
+      "extra_description_field": null
+    }
+  },
+  "workday": {
+    "request": {
+      "method": "POST",
+      "url_template": "https://{slug}.myworkdayjobs.com/wday/cxs/{slug}/External/jobs",
+      "headers": {"Content-Type": "application/json"},
+      "body": {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
+    },
+    "response": {
+      "listings_path": "$.jobPostings",
+      "id_field": "externalPath",
+      "title_field": "title",
+      "description_html_field": null,
+      "description_text_field": null,
+      "location_field": "locationsText",
+      "department_field": null,
+      "remote_field": null,
+      "posted_date_field": null,
+      "date_format": null,
+      "application_url_field": null,
+      "application_url_fallback": "https://{slug}.myworkdayjobs.com/External{id}",
+      "extra_description_field": null
+    }
+  }
+}

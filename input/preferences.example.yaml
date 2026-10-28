@@ -1,0 +1,33 @@
+target_roles:
+  - "Senior Full Stack Engineer"
+  - "Staff Software Engineer"
+  - "Senior Python Developer"
+
+target_keywords:
+  - "Python"
+  - "FastAPI"
+  - "React"
+  - "TypeScript"
+  - "AWS"
+
+locations:
+  - "Remote"
+  - "San Francisco"
+  - "New York"
+
+remote_only: false
+
+min_seniority: "senior"
+
+industries_include: []          # empty = all industries
+
+industries_exclude:
+  - "gambling"
+  - "defense"
+
+companies_exclude:
+  - "current-employer-slug"     # never apply to current employer
+
+max_listing_age_days: 30        # ignore listings older than 30 days
+
+salary_min: null                # set if ATS provides salary data

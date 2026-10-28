@@ -1,0 +1,17 @@
+Senior Software Engineer - Cloud Platform
+Google
+Mountain View, CA / Remote
+
+About the Job:
+We are looking for a Senior Software Engineer to build high-scale distributed backend systems and developer platforms.
+
+Responsibilities:
+- Design, build, and maintain production-grade REST APIs and cloud infrastructure.
+- Scale asynchronous background task workers and caching layers.
+- Write robust automated tests with high test coverage.
+
+Qualifications:
+- 5+ years of experience in backend development using Python, FastAPI, or modern frameworks.
+- Strong proficiency in PostgreSQL, Redis, and containerized deployments with Docker.
+- Experience with infrastructure as code using Terraform and AWS or GCP.
+- Passion for automated testing (pytest, unit tests, integration tests).

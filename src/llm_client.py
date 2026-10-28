@@ -1,0 +1,177 @@
+"""Gemini API client wrapper with structured output validation, retry, and token tracking."""
+
+import json
+import logging
+from typing import Any, Type, TypeVar
+from google import genai
+from google.genai import types
+from pydantic import BaseModel, ValidationError
+
+from config.settings import settings
+
+logger = logging.getLogger(__name__)
+
+T = TypeVar("T", bound=BaseModel)
+
+
+class LLMClientError(Exception):
+    """Base exception for LLM client errors."""
+
+
+class LLMClient:
+    """Wrapper around Google Gemini client."""
+
+    def __init__(self, api_key: str | None = None, model: str | None = None):
+        self.api_key = api_key or settings.google_api_key
+        self.model = model or settings.gemini_model
+        self._client: genai.Client | None = None
+        self.total_prompt_tokens = 0
+        self.total_candidate_tokens = 0
+
+    @property
+    def client(self) -> genai.Client:
+        """Lazy initialization of genai.Client."""
+        if self._client is None:
+            if not self.api_key:
+                raise LLMClientError(
+                    "GOOGLE_API_KEY is not configured. Set it in .env or pass api_key."
+                )
+            self._client = genai.Client(api_key=self.api_key)
+        return self._client
+
+    def generate_structured(
+        self,
+        prompt: str,
+        response_model: Type[T],
+        temperature: float = 0.2,
+    ) -> T:
+        """Generate structured output validated against a Pydantic model with 1 retry on error."""
+        schema_json = json.dumps(response_model.model_json_schema(), indent=2)
+        formatted_prompt = prompt.replace("{schema}", schema_json)
+
+        # First attempt
+        raw_text, error = self._call_model(formatted_prompt, temperature)
+        if raw_text is not None:
+            try:
+                return self._parse_and_validate(raw_text, response_model)
+            except (ValidationError, json.JSONDecodeError) as e:
+                logger.debug(
+                    "Validation failed on first attempt for %s: %s. Retrying with corrective prompt...",
+                    response_model.__name__,
+                    e,
+                )
+                error_msg = str(e)
+        else:
+            raise LLMClientError(f"LLM API call failed: {error}")
+
+        # Retry once with corrective prompt
+        corrective_prompt = (
+            f"{formatted_prompt}\n\n"
+            f"PREVIOUS ATTEMPT FAILED WITH VALIDATION ERROR:\n{error_msg}\n\n"
+            f"Fix the error and return ONLY valid JSON matching the exact schema."
+        )
+
+        retry_text, retry_error = self._call_model(corrective_prompt, temperature=0.0)
+        if retry_text is None:
+            raise LLMClientError(f"LLM call failed after retry: {retry_error}")
+
+        try:
+            return self._parse_and_validate(retry_text, response_model)
+        except (ValidationError, json.JSONDecodeError) as e:
+            raise LLMClientError(
+                f"Failed to validate response against {response_model.__name__} after retry: {e}"
+            ) from e
+
+    def generate_structured_list(
+        self,
+        prompt: str,
+        item_model: Type[T],
+        temperature: float = 0.2,
+    ) -> list[T]:
+        """Generate a list of structured items validated against a Pydantic model."""
+        raw_text, error = self._call_model(prompt, temperature)
+        if raw_text is not None:
+            try:
+                data = self._clean_and_decode_json(raw_text)
+                if isinstance(data, list):
+                    return [item_model.model_validate(item) for item in data]
+                elif isinstance(data, dict) and "items" in data and isinstance(data["items"], list):
+                    return [item_model.model_validate(item) for item in data["items"]]
+                else:
+                    raise ValidationError.from_exception_data(
+                        "Expected list", [{"type": "list_type", "loc": (), "msg": "Expected list"}]
+                    )
+            except Exception as e:
+                logger.debug("First attempt failed for list of %s: %s", item_model.__name__, e)
+                error_msg = str(e)
+        else:
+            raise LLMClientError(f"LLM API call failed: {error}")
+
+        corrective_prompt = (
+            f"{prompt}\n\n"
+            f"PREVIOUS ATTEMPT FAILED WITH ERROR:\n{error_msg}\n\n"
+            f"Return ONLY a JSON array containing valid objects matching the requirements."
+        )
+
+        retry_text, retry_error = self._call_model(corrective_prompt, temperature=0.0)
+        if retry_text is None:
+            raise LLMClientError(f"LLM call failed after retry: {retry_error}")
+
+        data = self._clean_and_decode_json(retry_text)
+        if isinstance(data, list):
+            return [item_model.model_validate(item) for item in data]
+        elif isinstance(data, dict) and "items" in data and isinstance(data["items"], list):
+            return [item_model.model_validate(item) for item in data["items"]]
+        raise LLMClientError(f"Expected JSON list of {item_model.__name__}, got {type(data)}")
+
+    def _call_model(self, prompt: str, temperature: float) -> tuple[str | None, Exception | None]:
+        """Low-level model call with usage tracking and error handling."""
+        try:
+            config = types.GenerateContentConfig(
+                temperature=temperature,
+                response_mime_type="application/json",
+            )
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=config,
+            )
+
+            if response.usage_metadata:
+                p_tokens = response.usage_metadata.prompt_token_count or 0
+                c_tokens = response.usage_metadata.candidates_token_count or 0
+                self.total_prompt_tokens += p_tokens
+                self.total_candidate_tokens += c_tokens
+                logger.info(
+                    "LLM token usage: +%d prompt, +%d candidate. Session total: %d in, %d out",
+                    p_tokens,
+                    c_tokens,
+                    self.total_prompt_tokens,
+                    self.total_candidate_tokens,
+                )
+
+            return response.text, None
+        except Exception as e:
+            logger.debug("Error calling Gemini API: %s", e)
+            return None, e
+
+    def _clean_and_decode_json(self, raw_text: str) -> Any:
+        """Strip markdown fences and parse JSON."""
+        text = raw_text.strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        elif text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+        return json.loads(text)
+
+    def _parse_and_validate(self, raw_text: str, model_cls: Type[T]) -> T:
+        """Parse raw text as JSON and validate against model_cls."""
+        data = self._clean_and_decode_json(raw_text)
+        return model_cls.model_validate(data)
+
+
+# Global instance
+llm_client = LLMClient()

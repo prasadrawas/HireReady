@@ -1,0 +1,51 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Environment variables (contains GOOGLE_API_KEY)
+.env
+
+# Playwright
+.playwright/
+
+# === PERSONAL / SENSITIVE DATA ===
+
+# Master resume — contains your real name, email, phone, address, employers
+input/master_resume.html
+
+# Job search preferences — reveals your target roles, locations, salary expectations
+input/preferences.yaml
+
+# All tailored output — contains your personalized resumes, cover letters, contact info
+output/
+!output/.gitkeep
+
+# Application tracking data — contains job history, interview stages, notes
+data/seen_jobs.json
+data/tracker.json
+data/last_scan.json
+data/alerts.json
+data/company_cache.json
+data/cron.log
+
+# Project prompt — development artifact, not needed in repo
+prompt.md
+
+# ATS company list — not sensitive, but user-customized
+# Uncomment if you want to keep your company list private:
+# config/ats_companies.json
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
