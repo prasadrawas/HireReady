@@ -247,11 +247,13 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{currentJob.company}</span>
                 <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>&bull;</span>
-                <span className={`text-[11px] uppercase font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                  darkMode ? 'bg-[#1e3a5f] text-slate-300 border-[#2a4a6f]' : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}>
                   {currentJob.ats_source}
                 </span>
                 {currentJob.remote && (
-                  <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 rounded-full font-bold">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
                     Remote
                   </span>
                 )}
@@ -266,7 +268,7 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
             <button
               onClick={() => onTailor(currentJob, true)}
               disabled={isTailoring}
-              className="px-4 py-2 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="h-10 px-4 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{isTailoring ? 'Regenerating...' : 'Regenerate Tailored Assets'}</span>
@@ -276,7 +278,7 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
               <a
                 href={`/api/jobs/${currentJob.id}/pdf`}
                 download={`Resume_${currentJob.company}_${currentJob.title}.pdf`}
-                className="px-4 py-2 rounded-full bg-[#057642] hover:bg-[#046237] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                className="h-10 px-4 rounded-full bg-[#057642] hover:bg-[#046237] text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" /> Download PDF
               </a>
@@ -286,7 +288,7 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
               <button
                 onClick={() => onAutoApply(currentJob, false)}
                 disabled={isAutoApplying && activeJobIdAutoApplying === currentJob.id}
-                className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                className="h-10 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
                 title="Auto-fill form, upload resume & cover letter, and answer custom questions via Playwright"
               >
                 {isAutoApplying && activeJobIdAutoApplying === currentJob.id ? (
@@ -307,8 +309,8 @@ export const TailorStudio: React.FC<TailorStudioProps> = ({
               href={currentJob.application_url}
               target="_blank"
               rel="noreferrer"
-              className={`p-2 rounded-full border transition-colors ${
-                darkMode ? 'border-[#1e3a5f] hover:bg-[#1e3a5f] text-slate-400' : 'border-slate-300 hover:bg-slate-100 text-slate-600'
+              className={`h-10 w-10 rounded-full border inline-flex items-center justify-center transition-colors shadow-2xs ${
+                darkMode ? 'border-[#2a4a6f] bg-[#1e3a5f] hover:bg-[#25466f] text-slate-300' : 'border-slate-300 bg-white hover:bg-slate-50 text-slate-600'
               }`}
               title="Open Official Job Board"
             >
