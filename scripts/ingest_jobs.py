@@ -42,6 +42,11 @@ def setup_logging(verbose: bool = False):
         format="%(asctime)s [%(levelname)s] %(message)s",
         datefmt="%H:%M:%S",
     )
+    # Mute noisy raw HTTP request logging from httpx/httpcore unless in verbose mode
+    if not verbose:
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 def parse_args():
