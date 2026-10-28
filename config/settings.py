@@ -17,6 +17,19 @@ class Settings(BaseSettings):
     # Gemini LLM configuration
     google_api_key: str = Field(default="", validation_alias="GOOGLE_API_KEY")
     gemini_model: str = Field(default="gemini-2.5-flash", validation_alias="GEMINI_MODEL")
+    gemini_fallback_models: str = Field(default="", validation_alias="GEMINI_FALLBACK_MODELS")
+
+    @property
+    def fallback_models(self) -> list[str]:
+        """Parse comma-separated fallback models into a list."""
+        if not self.gemini_fallback_models:
+            return []
+        return [m.strip() for m in self.gemini_fallback_models.split(",") if m.strip()]
+
+    @property
+    def all_models(self) -> list[str]:
+        """Primary model + fallbacks in order."""
+        return [self.gemini_model] + self.fallback_models
 
     # PDF output settings
     max_resume_pages: int = Field(default=2, validation_alias="MAX_RESUME_PAGES")

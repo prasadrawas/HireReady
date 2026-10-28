@@ -258,8 +258,9 @@ class Scorer:
                 all_deep_scores.extend(scores)
             except Exception as e:
                 # Print error visibly so user knows Gemini scoring failed
-                print(f"\n      ⚠️  Gemini deep scoring failed: {e}")
-                print("      Using quick scores as fallback. Check your GOOGLE_API_KEY in .env")
+                print(f"\n      ⚠️  Gemini deep scoring failed (all models exhausted): {e}")
+                print(f"      Models tried: {', '.join(settings.all_models)}")
+                print("      Using quick scores as fallback.")
                 logger.debug("Deep scoring failed for batch %d: %s", i, e)
                 # Fallback: use quick score as proxy when Gemini is unavailable
                 for job in chunk:
